@@ -288,6 +288,20 @@ export function processOrders(details) {
     .slice(0, 15)
     .map((b) => ({ ...b, spend: +b.spend.toFixed(2) }));
 
+  // --- Loyalty score per product ---
+  // loyalty = months purchased / total active months
+  const allMonths = [...new Set(details.map((d) => d.order?.shipping_date?.slice(0, 7)).filter(Boolean))];
+  const totalMonths = allMonths.length;
+  const loyaltyProducts = productList
+    .filter((p) => p.count >= 3)
+    .map((p) => {
+      const purchaseMonths = new Set(p.priceHistory.map((e) => e.date.slice(0, 7)));
+      const loyalty = totalMonths > 0 ? +(purchaseMonths.size / totalMonths * 100).toFixed(0) : 0;
+      return { id: p.id, name: p.name, brand: p.brand, category: p.category, count: p.count, loyalty };
+    })
+    .sort((a, b) => b.loyalty - a.loyalty)
+    .slice(0, 15);
+
   return {
     totalSpend,
     totalOrders,
@@ -308,5 +322,6 @@ export function processOrders(details) {
     inflationProducts,
     promoDependency,
     topBrands,
+    loyaltyProducts,
   };
 }

@@ -12,6 +12,7 @@ import {
   Package,
   Heart,
   Clock,
+  Repeat,
 } from "lucide-react";
 import { categoryColor } from "@/lib/categoryColors";
 import { fmt, fmtDate } from "@/lib/fmt";
@@ -64,6 +65,7 @@ export default function Overview({ data }) {
     inflationProducts,
     promoDependency,
     topBrands,
+    loyaltyProducts,
   } = data;
   const topList = topMode === "spend" ? topProducts : topByFrequency;
 
@@ -562,6 +564,58 @@ export default function Overview({ data }) {
           </CardContent>
         </Card>
       </div>
+
+      {/* Loyalty score */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-sm font-medium uppercase tracking-widest text-muted-foreground">
+            <Repeat size={14} />
+            Лоялност към продукти
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loyaltyProducts.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Няма достатъчно данни</p>
+          ) : (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {loyaltyProducts.map((p) => (
+                <div
+                  key={p.id}
+                  className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-colors hover:bg-muted/50"
+                  onClick={() => navigate(`/products?id=${p.id}`)}
+                >
+                  {productImg(p.id) && (
+                    <img
+                      src={productImg(p.id)}
+                      alt=""
+                      className="size-10 rounded object-contain bg-white shrink-0"
+                    />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm font-medium truncate">{p.name}</span>
+                      <span className="text-sm font-semibold shrink-0" style={{ color: "var(--brand)" }}>
+                        {p.loyalty}%
+                      </span>
+                    </div>
+                    <div className="mt-1.5 h-1.5 rounded-full bg-muted overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all"
+                        style={{ width: `${p.loyalty}%`, backgroundColor: "var(--brand)" }}
+                      />
+                    </div>
+                    <div className="mt-1 flex items-center justify-between">
+                      <CategoryBadge category={p.category} />
+                      <span className="text-xs text-muted-foreground">{p.count} покупки</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
     </main>
   );
 }
