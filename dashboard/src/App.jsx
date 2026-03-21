@@ -1,17 +1,7 @@
-import { Component, useCallback, useEffect, useRef, useState } from "react";
+import { Component, useCallback, useEffect, useState } from "react";
 import { BrowserRouter, NavLink, Route, Routes } from "react-router-dom";
-import {
-  Moon,
-  Sun,
-  Heart,
-  Bot,
-  RefreshCw,
-  CheckCircle2,
-  AlertCircle,
-  X,
-  LogIn,
-  Crosshair,
-} from "lucide-react";
+import { Moon, Sun, Heart, Bot, RefreshCw, AlertCircle, LogIn, Crosshair } from "lucide-react";
+import { LogViewer } from "@/components/ui/log-viewer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,51 +47,8 @@ class ErrorBoundary extends Component {
 // --- SyncPanel ---
 
 function SyncPanel({ state, logs, onClose }) {
-  const bottomRef = useRef(null);
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "instant" });
-  }, [logs]);
-
   if (state === "idle") return null;
-
-  const lines = logs
-    .split("\n")
-    .map((l) => l.split("\r").at(-1))
-    .filter(Boolean);
-
-  return (
-    <div className="fixed bottom-4 right-4 z-50 w-96 rounded-lg border bg-background shadow-xl overflow-hidden">
-      <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/50">
-        <div className="flex items-center gap-2 text-sm font-medium">
-          {state === "running" && (
-            <RefreshCw size={13} className="animate-spin text-muted-foreground" />
-          )}
-          {state === "done" && <CheckCircle2 size={13} className="text-emerald-500" />}
-          {state === "error" && <AlertCircle size={13} className="text-destructive" />}
-          <span>
-            {state === "running" ? "Синхронизира..." : state === "done" ? "Готово" : "Грешка"}
-          </span>
-        </div>
-        {state !== "running" && (
-          <button
-            onClick={onClose}
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <X size={13} />
-          </button>
-        )}
-      </div>
-      <div className="h-48 overflow-y-auto p-3 font-mono text-xs text-muted-foreground bg-muted/20">
-        {lines.map((line, i) => (
-          <div key={i} className="whitespace-pre leading-relaxed">
-            {line}
-          </div>
-        ))}
-        <div ref={bottomRef} />
-      </div>
-    </div>
-  );
+  return <LogViewer state={state} logs={logs} onClose={onClose} variant="floating" />;
 }
 
 // --- LoginForm ---
@@ -109,16 +56,6 @@ function SyncPanel({ state, logs, onClose }) {
 function LoginForm({ onSubmit, state, logs }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const bottomRef = useRef(null);
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "instant" });
-  }, [logs]);
-
-  const lines = logs
-    .split("\n")
-    .map((l) => l.split("\r").at(-1))
-    .filter(Boolean);
   const running = state === "running";
 
   function handleSubmit(e) {
@@ -166,26 +103,12 @@ function LoginForm({ onSubmit, state, logs }) {
           </form>
 
           {state !== "idle" && (
-            <div className="rounded-md border overflow-hidden">
-              <div className="flex items-center gap-2 px-3 py-1.5 border-b bg-muted/50 text-xs font-medium">
-                {state === "running" && (
-                  <RefreshCw size={11} className="animate-spin text-muted-foreground" />
-                )}
-                {state === "done" && <CheckCircle2 size={11} className="text-emerald-500" />}
-                {state === "error" && <AlertCircle size={11} className="text-destructive" />}
-                <span className="text-muted-foreground">
-                  {state === "running" ? "Влизане..." : state === "done" ? "Готово" : "Грешка"}
-                </span>
-              </div>
-              <div className="h-32 overflow-y-auto p-2 font-mono text-xs text-muted-foreground bg-muted/20">
-                {lines.map((line, i) => (
-                  <div key={i} className="whitespace-pre leading-relaxed">
-                    {line}
-                  </div>
-                ))}
-                <div ref={bottomRef} />
-              </div>
-            </div>
+            <LogViewer
+              state={state}
+              logs={logs}
+              variant="inline"
+              labels={{ running: "Влизане...", done: "Готово", error: "Грешка" }}
+            />
           )}
         </CardContent>
       </Card>

@@ -1,12 +1,15 @@
 import { useState, useMemo } from "react";
-import { ShoppingCart, TrendingUp, CreditCard, BarChart2, ExternalLink } from "lucide-react";
+import { ShoppingCart, TrendingUp, CreditCard, BarChart2 } from "lucide-react";
 import { CategoryFilter } from "@/components/ui/category-filter";
 import { CategoryBadge } from "@/components/ui/category-badge";
+import { EBagLink } from "@/components/ui/ebag-link";
 import { StatTile } from "@/components/ui/stat-tile";
 import { SortIcon, SortHead } from "@/components/ui/sort-icon";
 import { SectionHeader } from "@/components/ui/section-header";
 import { TablePagination } from "@/components/ui/table-pagination";
+import { useTableState, sortData } from "@/hooks/useTableState";
 import { fmt, fmtDate } from "@/lib/fmt";
+import { truncate } from "@/lib/truncate";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ReferenceDot } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -50,15 +53,7 @@ function PriceHistory({ product }) {
           </div>
           <div className="flex items-center gap-2 shrink-0 mt-0.5">
             <CategoryBadge category={product.category} />
-            <a
-              href={`https://www.ebag.bg/?product=${product.id}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            >
-              <ExternalLink size={12} />
-              Виж в eBag
-            </a>
+            <EBagLink type="product" id={product.id} variant="button" />
           </div>
         </div>
         <div className="grid grid-cols-3 gap-3 pt-1">
@@ -233,19 +228,7 @@ function PriceHistory({ product }) {
                       )}
                     </TableCell>
                     <TableCell className="text-right pr-4">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <a
-                            href={`https://www.ebag.bg/orders/${entry.orderId}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors"
-                          >
-                            <ExternalLink size={13} />
-                          </a>
-                        </TooltipTrigger>
-                        <TooltipContent>Виж в eBag</TooltipContent>
-                      </Tooltip>
+                      <EBagLink type="order" id={entry.orderId} />
                     </TableCell>
                   </TableRow>
                 );
@@ -261,26 +244,14 @@ function PriceHistory({ product }) {
 export default function Products({ productList }) {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState(null);
-  const [sortKey, setSortKey] = useState("count");
-  const [sortDir, setSortDir] = useState("desc");
   const [categoryFilter, setCategoryFilter] = useState([]);
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(15);
+  const { sortKey, sortDir, page, pageSize, setPage, handleSort, handlePageSize } =
+    useTableState("count");
 
   const categories = useMemo(
     () => [...new Set(productList.map((p) => p.category))].sort(),
     [productList],
   );
-
-  function handleSort(key) {
-    if (sortKey === key) {
-      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    } else {
-      setSortKey(key);
-      setSortDir("desc");
-    }
-    setPage(0);
-  }
 
   function handleSearch(v) {
     setSearch(v);
@@ -288,10 +259,6 @@ export default function Products({ productList }) {
   }
   function handleCategoryFilter(v) {
     setCategoryFilter(v);
-    setPage(0);
-  }
-  function handlePageSize(v) {
-    setPageSize(v);
     setPage(0);
   }
 
@@ -307,14 +274,7 @@ export default function Products({ productList }) {
     [productList, search, categoryFilter],
   );
 
-  const sorted = useMemo(() => {
-    return [...filtered].sort((a, b) => {
-      const av = a[sortKey] ?? "";
-      const bv = b[sortKey] ?? "";
-      const cmp = typeof av === "number" ? av - bv : av.localeCompare(bv);
-      return sortDir === "asc" ? cmp : -cmp;
-    });
-  }, [filtered, sortKey, sortDir]);
+  const sorted = sortData(filtered, sortKey, sortDir);
 
   const totalPages = Math.ceil(sorted.length / pageSize);
   const paginated = sorted.slice(page * pageSize, (page + 1) * pageSize);
@@ -404,7 +364,7 @@ export default function Products({ productList }) {
                   >
                     <TableCell>
                       <p className="font-medium" title={p.name.length > 50 ? p.name : undefined}>
-                        {p.name.length > 50 ? p.name.slice(0, 50) + "…" : p.name}
+                        {truncate(p.name, 50)}
                       </p>
                       {p.brand && <p className="text-xs text-muted-foreground">{p.brand}</p>}
                     </TableCell>
@@ -424,19 +384,7 @@ export default function Products({ productList }) {
                       {p.lastPurchase ? fmtDate(p.lastPurchase) : "—"}
                     </TableCell>
                     <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <a
-                            href={`https://www.ebag.bg/?product=${p.id}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors"
-                          >
-                            <ExternalLink size={13} />
-                          </a>
-                        </TooltipTrigger>
-                        <TooltipContent>Виж в eBag</TooltipContent>
-                      </Tooltip>
+                      <EBagLink type="product" id={p.id} />
                     </TableCell>
                   </TableRow>
                 );

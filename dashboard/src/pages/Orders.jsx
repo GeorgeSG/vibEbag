@@ -1,15 +1,16 @@
-import { useState, useMemo } from "react";
-import { ShoppingCart, CreditCard, BadgePercent, ExternalLink } from "lucide-react";
+import { useState } from "react";
+import { ShoppingCart, CreditCard, BadgePercent } from "lucide-react";
 
 import { CategoryBadge } from "@/components/ui/category-badge";
+import { EBagLink } from "@/components/ui/ebag-link";
 import { StatTile } from "@/components/ui/stat-tile";
 import { SortHead } from "@/components/ui/sort-icon";
 import { SectionHeader } from "@/components/ui/section-header";
 import { TablePagination } from "@/components/ui/table-pagination";
+import { useTableState, sortData } from "@/hooks/useTableState";
 import { fmt, fmtDate } from "@/lib/fmt";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Table,
   TableBody,
@@ -29,15 +30,7 @@ function OrderDetail({ order }) {
             <h2 className="text-lg font-semibold leading-snug">{fmtDate(order.date)}</h2>
             <p className="mt-0.5 text-sm text-muted-foreground font-mono">{order.id}</p>
           </div>
-          <a
-            href={`https://www.ebag.bg/orders/${order.id}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground shrink-0 mt-0.5"
-          >
-            <ExternalLink size={12} />
-            Виж в eBag
-          </a>
+          <EBagLink type="order" id={order.id} variant="button" className="mt-0.5" />
         </div>
         <div className="grid grid-cols-3 gap-3 pt-1">
           <StatTile
@@ -101,21 +94,7 @@ function OrderDetail({ order }) {
                     )}
                   </TableCell>
                   <TableCell className="text-right pr-4">
-                    {item.productId && (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <a
-                            href={`https://www.ebag.bg/?product=${item.productId}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors"
-                          >
-                            <ExternalLink size={13} />
-                          </a>
-                        </TooltipTrigger>
-                        <TooltipContent>Виж в eBag</TooltipContent>
-                      </Tooltip>
-                    )}
+                    {item.productId && <EBagLink type="product" id={item.productId} />}
                   </TableCell>
                 </TableRow>
               ))}
@@ -129,40 +108,10 @@ function OrderDetail({ order }) {
 
 export default function Orders({ orderList }) {
   const [selected, setSelected] = useState(null);
-  const [sortKey, setSortKey] = useState("date");
-  const [sortDir, setSortDir] = useState("desc");
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(15);
+  const { sortKey, sortDir, page, pageSize, setPage, handleSort, handlePageSize } =
+    useTableState("date");
 
-  function handleSort(key) {
-    if (sortKey === key) {
-      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    } else {
-      setSortKey(key);
-      setSortDir("desc");
-    }
-    setPage(0);
-  }
-
-  function handlePageSize(v) {
-    setPageSize(v);
-    setPage(0);
-  }
-
-  const sorted = useMemo(() => {
-    return [...orderList].sort((a, b) => {
-      const av = a[sortKey];
-      const bv = b[sortKey];
-      if (av == null && bv == null) return 0;
-      if (av == null) return 1;
-      if (bv == null) return -1;
-      const cmp =
-        typeof av === "number" && typeof bv === "number"
-          ? av - bv
-          : String(av).localeCompare(String(bv));
-      return sortDir === "asc" ? cmp : -cmp;
-    });
-  }, [orderList, sortKey, sortDir]);
+  const sorted = sortData(orderList, sortKey, sortDir);
 
   const totalPages = Math.ceil(sorted.length / pageSize);
   const paginated = sorted.slice(page * pageSize, (page + 1) * pageSize);
@@ -234,19 +183,7 @@ export default function Orders({ orderList }) {
                     {fmt(o.saved)} €
                   </TableCell>
                   <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <a
-                          href={`https://www.ebag.bg/orders/${o.id}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                          <ExternalLink size={13} />
-                        </a>
-                      </TooltipTrigger>
-                      <TooltipContent>Виж в eBag</TooltipContent>
-                    </Tooltip>
+                    <EBagLink type="order" id={o.id} />
                   </TableCell>
                 </TableRow>
               ))}

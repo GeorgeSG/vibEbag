@@ -9,10 +9,11 @@ import {
   Calendar,
   ShoppingBag,
   Package,
-  ExternalLink,
 } from "lucide-react";
 import { categoryColor } from "@/lib/categoryColors";
 import { fmt, fmtDate } from "@/lib/fmt";
+import { truncate } from "@/lib/truncate";
+import { EBagLink } from "@/components/ui/ebag-link";
 import { CategoryBadge } from "@/components/ui/category-badge";
 import { StatTile } from "@/components/ui/stat-tile";
 import {
@@ -29,7 +30,6 @@ import {
 } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function Overview({ data }) {
   const [topMode, setTopMode] = useState("spend");
@@ -309,19 +309,7 @@ export default function Overview({ data }) {
                 <li key={o.id} className="flex items-center justify-between gap-4 py-2.5 text-sm">
                   <span className="text-muted-foreground">{fmtDate(o.date)}</span>
                   <span className="tabular-nums font-medium">{fmt(o.total)} €</span>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <a
-                        href={`https://www.ebag.bg/orders/${o.id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="ml-auto shrink-0 inline-flex items-center text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        <ExternalLink size={13} />
-                      </a>
-                    </TooltipTrigger>
-                    <TooltipContent>Виж в eBag</TooltipContent>
-                  </Tooltip>
+                  <EBagLink type="order" id={o.id} className="ml-auto shrink-0" />
                 </li>
               ))}
             </ul>
@@ -345,24 +333,10 @@ export default function Overview({ data }) {
               {inflationProducts.map((p) => (
                 <li key={p.name} className="py-2.5">
                   <div className="flex items-start justify-between gap-2">
-                    <span className="text-sm font-medium leading-snug">
-                      {p.name.length > 35 ? p.name.slice(0, 35) + "…" : p.name}
-                    </span>
+                    <span className="text-sm font-medium leading-snug">{truncate(p.name, 35)}</span>
                     <div className="flex items-center gap-2 shrink-0">
                       <span className="text-sm font-semibold text-red-500">+{p.pctIncrease}%</span>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <a
-                            href={`https://www.ebag.bg/?product=${p.id}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors"
-                          >
-                            <ExternalLink size={13} />
-                          </a>
-                        </TooltipTrigger>
-                        <TooltipContent>Виж в eBag</TooltipContent>
-                      </Tooltip>
+                      <EBagLink type="product" id={p.id} />
                     </div>
                   </div>
                   <div className="mt-1 flex items-center gap-2">
