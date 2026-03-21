@@ -139,11 +139,3 @@ To regenerate the seed data:
 cd scraper && npm run seed
 ```
 
-### Docker
-
-```bash
-docker compose up
-```
-
-The dashboard will be available at `http://localhost:5173`. Order data is persisted in the `data/` volume.
-
