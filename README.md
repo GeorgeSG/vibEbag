@@ -89,6 +89,14 @@ vibEbag/
 
 ## Setup & usage
 
+### Prerequisites
+
+This project uses [mise](https://mise.jdx.dev/) to manage the Node.js version. Install mise, then run:
+
+```bash
+mise install
+```
+
 ### 1. Install dependencies
 
 ```bash
