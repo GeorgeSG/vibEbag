@@ -25,6 +25,16 @@ Some code has been read by humans.
 - 🌙 **Dark mode** — persistent light/dark theme toggle
 - 🇧🇬 **Bulgarian UI** — all labels, dates, and formatting in Bulgarian
 
+## Responsible API usage
+
+This tool accesses eBag's internal API using your own session credentials to fetch your own personal data. It is designed to be as light on eBag's infrastructure as possible:
+
+- **Throttled requests** — order detail fetches are limited to 2 concurrent requests with a 500–1000 ms random delay between each one, avoiding any burst load on the API.
+- **Incremental fetching** — on every sync, already-fetched orders are skipped entirely. Only new orders since the last run are requested, keeping the total number of API calls to a minimum.
+- **Local caching** — all data is stored locally in JSON files and served directly from disk. The API is never contacted just to view the dashboard.
+
+Please use this tool responsibly and only to access your own data.
+
 ---
 
 ## Project structure
