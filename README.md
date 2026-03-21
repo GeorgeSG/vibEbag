@@ -11,6 +11,15 @@ Some code has been read by humans.
 |---|---|
 | ![Light mode](docs/screenshot-light.png) | ![Dark mode](docs/screenshot-dark.png) |
 
+- 📊 **Overview dashboard** — KPI tiles, monthly spend area chart, category donut, top products & brands
+- 🛍️ **Orders page** — sortable, paginated order list with a detail sheet per order
+- 🥦 **Products page** — sortable/filterable product table with price history chart and purchase detail
+- 🤖 **UI-driven scraping** — login and sync triggered from the browser, with real-time streaming progress
+- 🔐 **Headless Playwright login** — automated session management, credentials stored locally
+- ⚡ **Incremental fetching** — only new orders are fetched on re-sync
+- 🌱 **Synthetic seed data** — faker-generated dev dataset with realistic Bulgarian brands and categories
+- 🌙 **Dark mode** — persistent light/dark theme toggle
+- 🇧🇬 **Bulgarian UI** — all labels, dates, and formatting in Bulgarian
 
 ---
 
