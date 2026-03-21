@@ -9,6 +9,7 @@ import {
   Calendar,
   ShoppingBag,
   Package,
+  Heart,
 } from "lucide-react";
 import { categoryColor } from "@/lib/categoryColors";
 import { fmt, fmtDate } from "@/lib/fmt";
@@ -40,6 +41,8 @@ export default function Overview({ data }) {
     totalOrders,
     avgBasket,
     totalSaved,
+    totalTips,
+    tippedPct,
     monthlySpend,
     ordersByDay,
     categorySpend,
@@ -81,7 +84,7 @@ export default function Overview({ data }) {
   return (
     <main className="mx-auto max-w-6xl space-y-8 px-6 py-8">
       {/* KPI cards */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
         <StatTile
           label="Общо похарчено"
           value={`${fmt(totalSpend)} €`}
@@ -101,6 +104,13 @@ export default function Overview({ data }) {
           sub="от промоции и отстъпки"
           color="#10b981"
           icon={BadgePercent}
+        />
+        <StatTile
+          label="Общо бакшиши"
+          value={`${fmt(totalTips)} €`}
+          sub={`в ${tippedPct}% от поръчките`}
+          color="#e879f9"
+          icon={Heart}
         />
       </div>
 

@@ -38,6 +38,13 @@ export function processOrders(details) {
     (sum, d) => sum + toEur(d.overall_saved_eur, d.overall_saved),
     0,
   );
+  const totalTips = details.reduce(
+    (sum, d) => sum + toEur(d.overall_tip_eur, d.overall_tip),
+    0,
+  );
+  const tippedPct = totalOrders > 0
+    ? +((details.filter((d) => toEur(d.overall_tip_eur, d.overall_tip) > 0).length / totalOrders) * 100).toFixed(0)
+    : 0;
 
   // --- Monthly spend ---
   const monthMap = {};
@@ -190,6 +197,7 @@ export function processOrders(details) {
         date: d.order.shipping_date,
         total: +toEur(d.order.final_amount_eur, d.order.final_amount).toFixed(2),
         saved: +toEur(d.overall_saved_eur, d.overall_saved).toFixed(2),
+        tip: +toEur(d.overall_tip_eur, d.overall_tip).toFixed(2),
         itemCount: items.length,
         items,
       };
@@ -266,6 +274,8 @@ export function processOrders(details) {
     totalOrders,
     avgBasket,
     totalSaved,
+    totalTips,
+    tippedPct,
     monthlySpend,
     avgBasketTrend,
     ordersByDay,

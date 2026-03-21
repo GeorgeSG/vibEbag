@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ShoppingCart, CreditCard, BadgePercent } from "lucide-react";
+import { ShoppingCart, CreditCard, BadgePercent, Heart } from "lucide-react";
 
 import { CategoryBadge } from "@/components/ui/category-badge";
 import { EBagLink } from "@/components/ui/ebag-link";
@@ -33,7 +33,7 @@ function OrderDetail({ order }) {
           </div>
           <EBagLink type="order" id={order.id} variant="button" className="mt-0.5" />
         </div>
-        <div className="grid grid-cols-3 gap-3 pt-1">
+        <div className={`grid gap-3 pt-1 ${order.tip > 0 ? "grid-cols-4" : "grid-cols-3"}`}>
           <StatTile
             variant="sheet"
             label="Продукти"
@@ -55,6 +55,15 @@ function OrderDetail({ order }) {
             color="#10b981"
             icon={BadgePercent}
           />
+          {order.tip > 0 && (
+            <StatTile
+              variant="sheet"
+              label="Бакшиш"
+              value={`${fmt(order.tip)} €`}
+              color="#e879f9"
+              icon={Heart}
+            />
+          )}
         </div>
       </div>
 
