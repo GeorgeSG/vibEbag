@@ -18,12 +18,12 @@ function loadCookieHeader() {
   try {
     const cookies = JSON.parse(readFileSync(COOKIE_FILE, "utf-8"));
     if (!cookies.length) {
-      console.error("Cookie file is empty. Run `npm run login` first.");
+      console.error("Файлът с бисквитки е празен. Първо изпълнете `npm run login`.");
       process.exit(1);
     }
     return cookies.map((c) => `${c.name}=${c.value}`).join("; ");
   } catch {
-    console.error("No cookies found. Run `npm run login` first.");
+    console.error("Няма намерени бисквитки. Първо изпълнете `npm run login`.");
     process.exit(1);
   }
 }
@@ -39,17 +39,17 @@ async function checkSession(cookieHeader) {
   });
 
   if (res.status >= 300 && res.status < 400) {
-    console.error("Session expired. Run `npm run login` first.");
+    console.error("Сесията е изтекла. Първо изпълнете `npm run login`.");
     process.exit(1);
   }
   if (!res.ok) {
-    console.error(`Session check failed: ${res.status} ${res.statusText}`);
+    console.error(`Проверката на сесията се провали: ${res.status} ${res.statusText}`);
     process.exit(1);
   }
 
   const data = await res.json();
   if (!Array.isArray(data.results)) {
-    console.error("Session expired or unexpected response. Run `npm run login` first.");
+    console.error("Сесията е изтекла или неочакван отговор. Първо изпълнете `npm run login`.");
     process.exit(1);
   }
 
@@ -58,7 +58,7 @@ async function checkSession(cookieHeader) {
 }
 
 async function fetchAllOrders(cookieHeader, firstPage) {
-  console.log("Fetching orders...");
+  console.log("Зареждане на поръчки...");
   let page = 1;
   const allOrders = [];
 
@@ -73,7 +73,7 @@ async function fetchAllOrders(cookieHeader, firstPage) {
         headers: { Cookie: cookieHeader, Accept: "application/json" },
       });
       if (!res.ok) {
-        console.error(`API request failed: ${res.status} ${res.statusText}`);
+        console.error(`Грешка в заявката: ${res.status} ${res.statusText}`);
         process.exit(1);
       }
       data = await res.json();
@@ -81,7 +81,7 @@ async function fetchAllOrders(cookieHeader, firstPage) {
 
     const items = data.results ?? [];
     allOrders.push(...items);
-    console.log(`  Page ${page}: ${items.length} orders (total: ${allOrders.length})`);
+    console.log(`  Страница ${page}: ${items.length} поръчки (общо: ${allOrders.length})`);
 
     if (!data.next) break;
     page++;
@@ -128,10 +128,10 @@ async function main() {
   const toFetch = orders.filter((o) => !existingIds.has(o.encrypted_id));
 
   if (toFetch.length === 0) {
-    console.log("\nAll order details are up to date.");
+    console.log("\nВсички поръчки са актуални.");
     return;
   }
-  console.log(`\nFetching details for ${toFetch.length} new orders (${existingIds.size} already cached, concurrency: ${CONCURRENCY})...`);
+  console.log(`\nЗареждане на детайли за ${toFetch.length} нови поръчки (${existingIds.size} вече кеширани)...`);
 
   let done = 0;
   const tasks = toFetch.map((order) => async () => {
@@ -143,11 +143,11 @@ async function main() {
   });
 
   const newDetails = await runWithConcurrency(tasks, CONCURRENCY);
-  console.log("\nDone.");
+  console.log("\nГотово.");
 
   const allDetails = [...existing, ...newDetails];
   writeFileSync(DETAILS_FILE, JSON.stringify(allDetails, null, 2));
-  console.log(`Saved ${allDetails.length} orders to ${DETAILS_FILE}`);
+  console.log(`Запазени ${allDetails.length} поръчки.`);
 }
 
 main().catch((err) => { console.error(err); process.exit(1); });

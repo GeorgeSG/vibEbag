@@ -30,7 +30,7 @@ function sseJob(res, req, script) {
 
   child.on("close", (code) => {
     send(code === 0 ? "done" : "error",
-      code === 0 ? "Finished." : `Process exited with code ${code}`);
+      code === 0 ? "Готово." : `Процесът завърши с код ${code}`);
     res.end();
   });
 
@@ -77,14 +77,14 @@ export default function scraperPlugin() {
         req.on("end", () => {
           try {
             const { email, password } = JSON.parse(body);
-            if (!email || !password) { res.writeHead(400); res.end(JSON.stringify({ error: "Missing fields" })); return; }
+            if (!email || !password) { res.writeHead(400); res.end(JSON.stringify({ error: "Липсващи полета" })); return; }
             if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true });
             writeFileSync(CREDENTIALS_FILE, JSON.stringify({ email, password }, null, 2));
             res.setHeader("Content-Type", "application/json");
             res.end(JSON.stringify({ ok: true }));
           } catch {
             res.writeHead(400);
-            res.end(JSON.stringify({ error: "Invalid request" }));
+            res.end(JSON.stringify({ error: "Невалидна заявка" }));
           }
         });
       });
@@ -93,7 +93,7 @@ export default function scraperPlugin() {
       server.middlewares.use("/api/login", (req, res) => {
         if (activeJob) {
           res.writeHead(409, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ error: `Already running: ${activeJob}` }));
+          res.end(JSON.stringify({ error: `Вече работи: ${activeJob}` }));
           return;
         }
         activeJob = "login";
@@ -106,7 +106,7 @@ export default function scraperPlugin() {
       server.middlewares.use("/api/scrape", (req, res) => {
         if (activeJob) {
           res.writeHead(409, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ error: `Already running: ${activeJob}` }));
+          res.end(JSON.stringify({ error: `Вече работи: ${activeJob}` }));
           return;
         }
         activeJob = "scrape";

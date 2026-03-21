@@ -49,22 +49,22 @@ async function promptPassword(question) {
 }
 
 async function main() {
-  console.log("eBag Login\n");
+  console.log("eBag Вход\n");
 
   const creds = loadCredentials();
   let email = creds.email;
   let password = creds.password;
 
   if (email && password) {
-    console.log(`Using credentials from data/credentials.json (${email})`);
+    console.log(`Намерени данни за вход от data/credentials.json (${email})`);
   } else {
-    email = email ?? await prompt("Email: ");
-    password = password ?? await promptPassword("Password: ");
+    email = email ?? await prompt("Имейл: ");
+    password = password ?? await promptPassword("Парола: ");
     writeFileSync(CREDENTIALS_FILE, JSON.stringify({ email, password }, null, 2));
-    console.log(`Credentials saved to ${CREDENTIALS_FILE}`);
+    console.log(`Данните за вход са запазени.`);
   }
 
-  console.log("\nLogging in...");
+  console.log("\nВлизане...");
 
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext();
@@ -86,14 +86,14 @@ async function main() {
   try {
     await page.waitForURL((url) => !url.href.includes("/login"), { timeout: 15000 });
   } catch {
-    console.error("Login may have failed — check your credentials.");
+    console.error("Входът не успя — проверете данните си.");
     await browser.close();
     process.exit(1);
   }
 
   const cookies = await context.cookies();
   writeFileSync(COOKIE_FILE, JSON.stringify(cookies, null, 2));
-  console.log(`Cookies saved to ${COOKIE_FILE}`);
+  console.log("Бисквитките са запазени. Входът е успешен.");
 
   await browser.close();
 }

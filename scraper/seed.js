@@ -361,6 +361,6 @@ writeFileSync(OUT_FILE, JSON.stringify(orders, null, 2));
 
 const totals = orders.map((o) => parseFloat(o.order.final_amount_eur));
 const avg = (totals.reduce((a, b) => a + b, 0) / totals.length).toFixed(2);
-console.log(`Generated ${orders.length} orders  |  ${PRODUCTS.length} unique products`);
-console.log(`Avg basket: €${avg}  Min: €${Math.min(...totals).toFixed(2)}  Max: €${Math.max(...totals).toFixed(2)}`);
-console.log(`Saved to ${OUT_FILE}`);
+console.log(`Генерирани ${orders.length} поръчки  |  ${PRODUCTS.length} уникални продукта`);
+console.log(`Средна кошница: €${avg}  Мин: €${Math.min(...totals).toFixed(2)}  Макс: €${Math.max(...totals).toFixed(2)}`);
+console.log(`Запазено в ${OUT_FILE}`);
