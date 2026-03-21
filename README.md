@@ -64,7 +64,8 @@ vibEbag/
 │   │   ├── pages/
 │   │   │   ├── Overview.jsx         # KPI cards, monthly spend, category charts, top products
 │   │   │   ├── Products.jsx         # Sortable/filterable product table + price history chart
-│   │   │   └── Orders.jsx           # Sortable orders table with sheet detail
+│   │   │   ├── Orders.jsx           # Sortable orders table with sheet detail
+│   │   │   └── PriceGame.jsx       # Реалитест — price guessing game
 │   │   ├── components/ui/           # shadcn components + custom shared components
 │   │   └── index.css                # Tailwind v4 entry + shadcn CSS variable theme
 │   ├── scraper-plugin.js            # Vite plugin: serves data + exposes scraper API endpoints
@@ -122,9 +123,16 @@ npx playwright install chromium
 cd dashboard && npm run dev
 ```
 
-On first launch, a login form will appear. Enter your eBag email and password — these are saved to `data/credentials.json`. The app then logs in via Playwright (headless) and fetches all your orders automatically.
+On first launch, a login form will appear. Enter your eBag email and password — these are saved to `data/credentials.json`. The app then logs in via Playwright (headless) and fetches all your orders automatically. To re-fetch orders (e.g. after new deliveries), click the sync button (↻) in the header.
 
-To re-fetch orders (e.g. after new deliveries), click the sync button (↻) in the header.
+Alternatively, you can run the login and data fetching manually from the terminal:
+
+```bash
+cd scraper && npm run login    # authenticate and save session cookies
+cd scraper && npm run fetch    # fetch all orders (incremental)
+```
+
+This is useful if the UI-based login doesn't work on your system, or if you prefer running things from the command line.
 
 ### 3. Dev mode with synthetic data
 
