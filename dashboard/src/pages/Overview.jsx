@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   CreditCard,
   ShoppingCart,
@@ -43,6 +44,7 @@ import {
 } from "@/components/ui/table";
 
 export default function Overview({ data }) {
+  const navigate = useNavigate();
   const [topMode, setTopMode] = useState("spend");
   const [brandsMode, setBrandsMode] = useState("spend");
   const {
@@ -362,12 +364,16 @@ export default function Overview({ data }) {
             </TableHeader>
             <TableBody>
               {topOrders.map((o) => (
-                <TableRow key={o.id}>
+                <TableRow
+                  key={o.id}
+                  className="cursor-pointer transition-colors hover:bg-muted/50"
+                  onClick={() => navigate(`/orders?id=${o.id}`)}
+                >
                   <TableCell className="text-muted-foreground">{fmtDate(o.date)}</TableCell>
                   <TableCell className="tabular-nums">{o.itemCount}</TableCell>
                   <TableCell className="text-muted-foreground">{o.timeSlot ?? "—"}</TableCell>
                   <TableCell className="text-right tabular-nums font-medium">{fmt(o.total)} €</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                     <EBagLink type="order" id={o.id} />
                   </TableCell>
                 </TableRow>
@@ -391,7 +397,11 @@ export default function Overview({ data }) {
           ) : (
             <ul className="grid grid-cols-2 divide-y divide-border gap-x-8">
               {inflationProducts.map((p) => (
-                <li key={p.name} className="py-2.5">
+                <li
+                  key={p.name}
+                  className="cursor-pointer rounded-lg px-2 py-2.5 transition-colors hover:bg-muted/50"
+                  onClick={() => navigate(`/products?id=${p.id}`)}
+                >
                   <div className="flex items-start gap-3">
                     {productImg(p.id) && (
                       <img
@@ -405,7 +415,9 @@ export default function Overview({ data }) {
                         <span className="text-sm font-medium leading-snug">{truncate(p.name, 35)}</span>
                         <div className="flex items-center gap-2 shrink-0">
                           <span className="text-sm font-semibold text-red-500">+{p.pctIncrease}%</span>
-                          <EBagLink type="product" id={p.id} />
+                          <span onClick={(e) => e.stopPropagation()}>
+                            <EBagLink type="product" id={p.id} />
+                          </span>
                         </div>
                       </div>
                       <div className="mt-1 flex items-center gap-2">

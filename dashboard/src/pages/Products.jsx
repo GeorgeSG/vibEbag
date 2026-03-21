@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { ShoppingCart, TrendingUp, CreditCard, BarChart2 } from "lucide-react";
 import { CategoryFilter } from "@/components/ui/category-filter";
 import { CategoryBadge } from "@/components/ui/category-badge";
@@ -31,7 +32,7 @@ const priceChartConfig = {
   unitPrice: { label: "Цена", color: "var(--chart-1)" },
 };
 
-function PriceHistory({ product }) {
+function PriceHistory({ product, onNavigateOrder }) {
   const [dateDir, setDateDir] = useState("desc");
   const data = product.priceHistory;
   const prices = data.map((d) => d.unitPrice);
@@ -220,7 +221,11 @@ function PriceHistory({ product }) {
                 const isMin = entry.unitPrice === min;
                 const isMax = entry.unitPrice === max;
                 return (
-                  <TableRow key={entry.orderId} className="hover:bg-muted/30">
+                  <TableRow
+                    key={entry.orderId}
+                    className="cursor-pointer hover:bg-muted/30"
+                    onClick={() => onNavigateOrder(entry.orderId)}
+                  >
                     <TableCell className="pl-4 text-muted-foreground">
                       {fmtDate(entry.date)}
                     </TableCell>
@@ -237,7 +242,7 @@ function PriceHistory({ product }) {
                         </Tooltip>
                       )}
                     </TableCell>
-                    <TableCell className="text-right pr-4">
+                    <TableCell className="text-right pr-4" onClick={(e) => e.stopPropagation()}>
                       <EBagLink type="order" id={entry.orderId} />
                     </TableCell>
                   </TableRow>
@@ -252,9 +257,26 @@ function PriceHistory({ product }) {
 }
 
 export default function Products({ productList }) {
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState(null);
   const [categoryFilter, setCategoryFilter] = useState([]);
+
+  const selectedId = searchParams.get("id");
+  const selected = useMemo(
+    () => (selectedId ? productList.find((p) => String(p.id) === selectedId) ?? null : null),
+    [selectedId, productList],
+  );
+  const setSelected = useCallback(
+    (p) => {
+      if (p) {
+        setSearchParams({ id: p.id }, { replace: true });
+      } else {
+        setSearchParams({}, { replace: true });
+      }
+    },
+    [setSearchParams],
+  );
   const { sortKey, sortDir, page, pageSize, setPage, handleSort, handlePageSize } =
     useTableState("count");
 
@@ -293,7 +315,12 @@ export default function Products({ productList }) {
     <div className="mx-auto max-w-screen-2xl space-y-6 px-6 py-8">
       <Sheet open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
         <SheetContent className="!w-[60vw] !max-w-none overflow-y-auto p-8 pt-14">
-          {selected && <PriceHistory product={selected} />}
+          {selected && (
+            <PriceHistory
+              product={selected}
+              onNavigateOrder={(orderId) => navigate(`/orders?id=${orderId}`)}
+            />
+          )}
         </SheetContent>
       </Sheet>
 

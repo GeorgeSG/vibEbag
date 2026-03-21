@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { ShoppingCart, CreditCard, BadgePercent, Heart } from "lucide-react";
 
 import { CategoryBadge } from "@/components/ui/category-badge";
@@ -12,6 +13,7 @@ import { fmt, fmtDate } from "@/lib/fmt";
 import { productImg } from "@/lib/productImg";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Table,
   TableBody,
@@ -21,7 +23,28 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-function OrderDetail({ order }) {
+function TruncatedName({ name, className }) {
+  const ref = useRef(null);
+  const [isTruncated, setIsTruncated] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (el) setIsTruncated(el.scrollWidth > el.clientWidth);
+  }, [name]);
+
+  const span = <span ref={ref} className={`block truncate ${className}`}>{name}</span>;
+
+  if (!isTruncated) return span;
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{span}</TooltipTrigger>
+      <TooltipContent>{name}</TooltipContent>
+    </Tooltip>
+  );
+}
+
+function OrderDetail({ order, onNavigateProduct }) {
   return (
     <div className="space-y-8">
       {/* Hero header */}
@@ -87,7 +110,11 @@ function OrderDetail({ order }) {
             </TableHeader>
             <TableBody>
               {order.items.map((item, i) => (
-                <TableRow key={i} className="hover:bg-muted/30">
+                <TableRow
+                  key={i}
+                  className={`hover:bg-muted/30 ${item.productId ? "cursor-pointer" : ""}`}
+                  onClick={() => item.productId && onNavigateProduct(item.productId)}
+                >
                   <TableCell className="pl-4 font-medium">
                     <div className="flex items-center gap-3">
                       {productImg(item.productId) && (
@@ -97,7 +124,7 @@ function OrderDetail({ order }) {
                           className="size-8 rounded object-contain bg-white shrink-0"
                         />
                       )}
-                      {item.name}
+                      <TruncatedName name={item.name} className="max-w-[340px]" />
                     </div>
                   </TableCell>
                   <TableCell>
@@ -117,7 +144,7 @@ function OrderDetail({ order }) {
                       <span className="ml-1.5 inline-block size-2 rounded-full bg-emerald-500 align-middle" />
                     )}
                   </TableCell>
-                  <TableCell className="text-right pr-4">
+                  <TableCell className="text-right pr-4" onClick={(e) => e.stopPropagation()}>
                     {item.productId && <EBagLink type="product" id={item.productId} />}
                   </TableCell>
                 </TableRow>
@@ -131,7 +158,24 @@ function OrderDetail({ order }) {
 }
 
 export default function Orders({ orderList }) {
-  const [selected, setSelected] = useState(null);
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const selectedId = searchParams.get("id");
+  const selected = useMemo(
+    () => (selectedId ? orderList.find((o) => o.id === selectedId) ?? null : null),
+    [selectedId, orderList],
+  );
+  const setSelected = useCallback(
+    (o) => {
+      if (o) {
+        setSearchParams({ id: o.id }, { replace: true });
+      } else {
+        setSearchParams({}, { replace: true });
+      }
+    },
+    [setSearchParams],
+  );
   const { sortKey, sortDir, page, pageSize, setPage, handleSort, handlePageSize } =
     useTableState("date");
 
@@ -144,7 +188,12 @@ export default function Orders({ orderList }) {
     <div className="mx-auto max-w-6xl space-y-6 px-6 py-8">
       <Sheet open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
         <SheetContent className="!w-[60vw] !max-w-none overflow-y-auto p-8 pt-14">
-          {selected && <OrderDetail order={selected} />}
+          {selected && (
+            <OrderDetail
+              order={selected}
+              onNavigateProduct={(productId) => navigate(`/products?id=${productId}`)}
+            />
+          )}
         </SheetContent>
       </Sheet>
 
