@@ -1,17 +1,12 @@
 FROM node:25-bookworm-slim
 
-# Install Playwright's Chromium dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 \
-    libxkbcommon0 libxcomposite1 libxdamage1 libxrandr2 libgbm1 \
-    libpango-1.0-0 libcairo2 libasound2 libxshmfence1 \
-    && rm -rf /var/lib/apt/lists/*
-
 WORKDIR /app
 
-# Install scraper dependencies + Playwright browser
+# Install scraper dependencies + Playwright browser + all its OS deps
 COPY scraper/package.json scraper/package-lock.json ./scraper/
-RUN cd scraper && npm ci --omit=dev && npx playwright install chromium
+RUN cd scraper && npm ci --omit=dev \
+    && npx playwright install --with-deps chromium \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install dashboard dependencies
 COPY dashboard/package.json dashboard/package-lock.json ./dashboard/
