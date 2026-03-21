@@ -29,7 +29,10 @@ function OrderDetail({ order }) {
         <div className="mb-3 flex items-start justify-between gap-4">
           <div>
             <h2 className="text-lg font-semibold leading-snug">{fmtDate(order.date)}</h2>
-            <p className="mt-0.5 text-sm text-muted-foreground font-mono">{order.id}</p>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              <span className="font-mono">{order.id}</span>
+              {order.timeSlot && <span className="ml-2">· {order.timeSlot}</span>}
+            </p>
           </div>
           <EBagLink type="order" id={order.id} variant="button" className="mt-0.5" />
         </div>

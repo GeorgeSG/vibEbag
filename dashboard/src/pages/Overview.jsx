@@ -10,6 +10,7 @@ import {
   ShoppingBag,
   Package,
   Heart,
+  Clock,
 } from "lucide-react";
 import { categoryColor } from "@/lib/categoryColors";
 import { fmt, fmtDate } from "@/lib/fmt";
@@ -32,6 +33,14 @@ import {
 } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export default function Overview({ data }) {
   const [topMode, setTopMode] = useState("spend");
@@ -45,6 +54,7 @@ export default function Overview({ data }) {
     tippedPct,
     monthlySpend,
     ordersByDay,
+    ordersByTimeSlot,
     categorySpend,
     topProducts,
     topByFrequency,
@@ -71,6 +81,7 @@ export default function Overview({ data }) {
   };
 
   const dayConfig = { count: { label: "Поръчки", color: "var(--brand)" } };
+  const timeSlotConfig = { count: { label: "Поръчки", color: "#8b5cf6" } };
   const promoConfig = Object.fromEntries(
     promoDependency.map((c) => [
       c.category,
@@ -283,7 +294,7 @@ export default function Overview({ data }) {
         </Card>
       </div>
 
-      {/* Row 1: Day of week + Top 5 orders */}
+      {/* Day of week + Time slot */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
@@ -310,23 +321,61 @@ export default function Overview({ data }) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-              <ShoppingBag size={14} />
-              Топ 5 поръчки
+              <Clock size={14} />
+              Поръчки по часови слот
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="divide-y divide-border">
-              {topOrders.map((o) => (
-                <li key={o.id} className="flex items-center justify-between gap-4 py-2.5 text-sm">
-                  <span className="text-muted-foreground">{fmtDate(o.date)}</span>
-                  <span className="tabular-nums font-medium">{fmt(o.total)} €</span>
-                  <EBagLink type="order" id={o.id} className="ml-auto shrink-0" />
-                </li>
-              ))}
-            </ul>
+            <ChartContainer config={timeSlotConfig} className="h-52 w-full">
+              <BarChart data={ordersByTimeSlot} margin={{ left: 0, right: 8 }}>
+                <CartesianGrid vertical={false} />
+                <XAxis dataKey="slot" tickLine={false} axisLine={false} tickMargin={8} tick={{ fontSize: 10 }} />
+                <YAxis tickLine={false} axisLine={false} tickMargin={8} width={32} />
+                <ChartTooltip
+                  content={<ChartTooltipContent formatter={(v) => [`${v} поръчки`]} />}
+                />
+                <Bar dataKey="count" fill="#8b5cf6" radius={[4, 4, 0, 0]} barSize={20} />
+              </BarChart>
+            </ChartContainer>
           </CardContent>
         </Card>
       </div>
+
+      {/* Top 5 orders */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-sm font-medium uppercase tracking-widest text-muted-foreground">
+            <ShoppingBag size={14} />
+            Топ 5 поръчки
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Дата</TableHead>
+                <TableHead>Продукти</TableHead>
+                <TableHead>Часови слот</TableHead>
+                <TableHead className="text-right">Сума</TableHead>
+                <TableHead className="w-0" />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {topOrders.map((o) => (
+                <TableRow key={o.id}>
+                  <TableCell className="text-muted-foreground">{fmtDate(o.date)}</TableCell>
+                  <TableCell className="tabular-nums">{o.itemCount}</TableCell>
+                  <TableCell className="text-muted-foreground">{o.timeSlot ?? "—"}</TableCell>
+                  <TableCell className="text-right tabular-nums font-medium">{fmt(o.total)} €</TableCell>
+                  <TableCell className="text-right">
+                    <EBagLink type="order" id={o.id} />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
       {/* Row 2: Price inflation — full width */}
       <Card>

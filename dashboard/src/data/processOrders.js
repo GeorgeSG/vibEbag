@@ -78,6 +78,19 @@ export function processOrders(details) {
     count: dayMap[d] || 0,
   }));
 
+  // --- Orders by time slot ---
+  const slotMap = {};
+  details.forEach((d) => {
+    const s = d.order?.time_slot_start;
+    const e = d.order?.time_slot_end;
+    if (s == null || e == null) return;
+    const label = `${String(s).slice(0, -2).padStart(2, "0")}:${String(s).slice(-2)}–${String(e).slice(0, -2).padStart(2, "0")}:${String(e).slice(-2)}`;
+    slotMap[label] = (slotMap[label] || 0) + 1;
+  });
+  const ordersByTimeSlot = Object.entries(slotMap)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([slot, count]) => ({ slot, count }));
+
   // --- Spend by category ---
   const catMap = {};
   allItems.forEach((item) => {
@@ -192,12 +205,18 @@ export function processOrders(details) {
             };
           }),
       );
+      const s = d.order.time_slot_start;
+      const e = d.order.time_slot_end;
+      const timeSlot = s != null && e != null
+        ? `${String(s).slice(0, -2).padStart(2, "0")}:${String(s).slice(-2)}–${String(e).slice(0, -2).padStart(2, "0")}:${String(e).slice(-2)}`
+        : null;
       return {
         id: d.encrypted_id,
         date: d.order.shipping_date,
         total: +toEur(d.order.final_amount_eur, d.order.final_amount).toFixed(2),
         saved: +toEur(d.overall_saved_eur, d.overall_saved).toFixed(2),
         tip: +toEur(d.overall_tip_eur, d.overall_tip).toFixed(2),
+        timeSlot,
         itemCount: items.length,
         items,
       };
@@ -279,6 +298,7 @@ export function processOrders(details) {
     monthlySpend,
     avgBasketTrend,
     ordersByDay,
+    ordersByTimeSlot,
     categorySpend,
     topProducts,
     topByFrequency,
