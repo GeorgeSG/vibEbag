@@ -13,6 +13,12 @@ Some code has been read by humans.
 |---|---|
 | ![Light mode](docs/screenshot-light.png) | ![Dark mode](docs/screenshot-dark.png) |
 
+### Реалитест
+
+| Guessing | Results |
+|---|---|
+| ![Realitest guessing](docs/screenshot-realitest-light.png) | ![Realitest results](docs/screenshot-realitest-dark.png) |
+
 ## Features
 
 - 📊 **Overview dashboard** — KPI tiles, monthly spend area chart, category donut, top products & brands
