@@ -1,19 +1,39 @@
 # vibEbag — Agent Guide
 
 ## Project overview
-A personal grocery analytics dashboard built from eBag order export data. The stack is React 18 + Vite + Tailwind CSS v4 + shadcn/ui (base-ui variant) + Recharts. All source lives in `dashboard/src/`.
+A personal grocery analytics dashboard built from eBag order export data. The stack is React 19 + Vite + Tailwind CSS v4 + shadcn/ui (base-ui variant) + Recharts. All source lives in `dashboard/src/`. The scraper lives in `scraper/`.
 
 ## Architecture
 
 ### Data flow
-- Raw data: `dashboard/public/data/order-details.json` (fetched at runtime)
+- The Vite plugin (`dashboard/scraper-plugin.js`) serves `data/order-details.json` (or `data/order-details.dev.json` when `VITE_USE_SEED=true`) directly to the browser — no manual file copying needed
 - Processing: `dashboard/src/data/processOrders.js` — single function that transforms raw orders into all dashboard-ready structures
 - Pages receive pre-computed data as props from `App.jsx`
+- `App.jsx` also handles login form, sync button, status checking, and error states
 
 ### Pages
 - `Overview.jsx` — KPI tiles + charts, max-w-6xl
 - `Products.jsx` — sortable/filterable product table with sheet detail, max-w-screen-2xl
 - `Orders.jsx` — sortable orders table with sheet detail, max-w-6xl
+
+### Scraper (`scraper/`)
+| File | Purpose |
+|---|---|
+| `auth.js` | Playwright headless login — reads credentials from `data/credentials.json`, saves session cookies to `data/cookies.json` |
+| `fetch-orders.js` | Fetches paginated order list + full line-item details in one run. Incremental: skips already-fetched orders. Rate-limited: concurrency 2, 500–1000 ms random delay |
+| `seed.js` | Generates synthetic dev data (`data/order-details.dev.json`) using `@faker-js/faker` with realistic Bulgarian brands and categories |
+
+### Vite plugin (`dashboard/scraper-plugin.js`)
+Exposes API endpoints on the Vite dev server:
+| Endpoint | Method | Purpose |
+|---|---|---|
+| `/data/order-details.json` | GET | Serves the data file from `../data/` |
+| `/api/status` | GET | Returns `{ hasCredentials, hasCookies, email }` |
+| `/api/credentials` | POST | Saves `{ email, password }` to `data/credentials.json` |
+| `/api/login` | GET | SSE stream — runs `auth.js` |
+| `/api/scrape` | GET | SSE stream — runs `fetch-orders.js` |
+
+Login and scrape endpoints use Server-Sent Events (SSE) to stream stdout/stderr from the child process. Messages are `{ type: "log"|"done"|"error", text }`. Only one job can run at a time (`activeJob` guard).
 
 ### Shared components (`dashboard/src/components/ui/`)
 | File | Purpose |
@@ -32,6 +52,9 @@ A personal grocery analytics dashboard built from eBag order export data. The st
 
 ### Monetary values
 Always in EUR. Use `toEur(eurVal, bgnVal)` in processOrders for conversion. Display with `fmt(n) + " €"`.
+
+### Brand color
+The brand teal is defined as `--brand: #138484` in `index.css` (both light and dark themes). Always use `var(--brand)` — never hardcode `#138484` in components. In Tailwind classes: `border-[var(--brand)]`. In inline styles: `style={{ color: "var(--brand)" }}`.
 
 ### Category colors
 Always use `categoryColor(category)` from `@/lib/categoryColors`. Apply as background with `+ "22"` opacity and border with `+ "55"`. Use `<CategoryBadge category={...} />` wherever possible instead of inlining.
@@ -62,6 +85,63 @@ Both Products and Orders use the same pattern:
 
 ### Adding new data
 Add all transformations to `processOrders.js` and include in the return object. Never compute derived stats inside components. When adding new fields to existing objects (e.g. `productId` to order items), also verify the field is present in all code paths (main orders and additional_orders).
+
+### Error handling
+- `App.jsx` wraps all routes in an `ErrorBoundary` class component — catches render errors and shows a Bulgarian error message with a reload button
+- `loadData()` and `fetchStatus()` both have `.catch()` handlers that set a `loadError` state, shown as an inline error with a retry button
+- EventSource streams (login/sync) have a 5-minute timeout that auto-closes the connection and shows "Времето за изчакване изтече."
+
+### Dev vs prod data
+- `npm run dev` — serves `data/order-details.json` (real data)
+- `npm run dev:seeded` — sets `VITE_USE_SEED=true`, serves `data/order-details.dev.json` (synthetic data)
+- `npm run seed` (in `scraper/`) — regenerates the synthetic data file
+
+## eBag API reference
+
+All endpoints require a valid session cookie (obtained via Playwright login). Pass cookies as a `Cookie` header.
+
+### Order list
+```
+GET https://www.ebag.bg/orders/list/json?page=1&exclude_additional_order=true
+```
+Response: `{ count, next, previous, results: [order summaries] }`. Each summary includes: `encrypted_id`, `shipping_date`, `final_amount`, `final_amount_eur`, `order_status`, `last_payment_method`. Pagination: follow `next` until `null`.
+
+### Order details
+```
+GET https://www.ebag.bg/orders/{encrypted_id}/details/json
+```
+Response: `{ order, grouped_items: [{ group_name, group_items }], additional_orders, overall_saved, overall_final_amount }`.
+
+**Important processing rules:**
+- `grouped_items` covers the main order; `additional_orders[].grouped_items` covers add-on orders. Flatten both.
+- Skip `group_name = "Променени количества"` and `group_name = null` — these are picker-adjusted duplicates. Including them double-counts spend.
+- `order_status`: `4` = delivered, `3` = cancelled/other
+- `unit_type`: `1` = sold by weight (kg), `2` = sold by unit
+- `item.price` = quantity × unit price. Use `product_saved.current_price` for the unit price.
+
+### Product images
+```
+https://www.ebag.bg/media/catalog/product/{main_image_id}.jpg
+```
+
+## Data model (processOrders.js output)
+
+| Field | Description |
+|---|---|
+| `totalSpend` | Sum of `order.final_amount` across all orders |
+| `totalOrders` | Count of orders |
+| `avgBasket` | `totalSpend / totalOrders` |
+| `totalSaved` | Sum of `overall_saved` (promo/discount savings) |
+| `monthlySpend` | `{ month: "YYYY-MM", spend }[]` sorted chronologically |
+| `categorySpend` | `{ category, spend }[]` sorted by spend descending |
+| `topProducts` | Top 15 products by total spend |
+| `topByFrequency` | Top 15 products by order count |
+| `productList` | All unique products with `count`, `totalSpend`, `avgPrice`, `firstPurchase`, `lastPurchase`, `priceHistory[]` |
+| `orderList` | All orders with `date`, `total`, `saved`, `itemCount`, `categories`, `items[]` |
+
+Each `priceHistory` entry: `{ date, orderId, unitPrice, wasPromo }`.
+
+`avgPrice` is average **unit price** (mean of `product_saved.current_price`), not average order spend.
 
 ## shadcn/ui notes
 - This project uses the **base-ui** variant of shadcn, not Radix
