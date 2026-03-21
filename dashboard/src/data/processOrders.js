@@ -88,7 +88,7 @@ export function processOrders(details) {
     const name = item.product_saved?.name_bg || item.product_saved?.name_en;
     if (!name) return;
     if (!productMap[name]) {
-      productMap[name] = { name, spend: 0, count: 0, unitPriceSum: 0, category: item.category };
+      productMap[name] = { id: item.product_saved?.id, name, spend: 0, count: 0, unitPriceSum: 0, category: item.category };
     }
     const ps = item.product_saved;
     productMap[name].spend += toEur(item.price_eur, item.price);

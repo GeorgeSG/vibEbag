@@ -9,6 +9,7 @@ import { SectionHeader } from "@/components/ui/section-header";
 import { TablePagination } from "@/components/ui/table-pagination";
 import { useTableState, sortData } from "@/hooks/useTableState";
 import { fmt, fmtDate } from "@/lib/fmt";
+import { productImg } from "@/lib/productImg";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import {
@@ -75,7 +76,18 @@ function OrderDetail({ order }) {
             <TableBody>
               {order.items.map((item, i) => (
                 <TableRow key={i} className="hover:bg-muted/30">
-                  <TableCell className="pl-4 font-medium">{item.name}</TableCell>
+                  <TableCell className="pl-4 font-medium">
+                    <div className="flex items-center gap-3">
+                      {productImg(item.productId) && (
+                        <img
+                          src={productImg(item.productId)}
+                          alt=""
+                          className="size-8 rounded object-contain bg-white shrink-0"
+                        />
+                      )}
+                      {item.name}
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <CategoryBadge category={item.category} />
                   </TableCell>

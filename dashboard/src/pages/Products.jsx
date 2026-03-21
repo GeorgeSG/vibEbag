@@ -10,6 +10,7 @@ import { TablePagination } from "@/components/ui/table-pagination";
 import { useTableState, sortData } from "@/hooks/useTableState";
 import { fmt, fmtDate } from "@/lib/fmt";
 import { truncate } from "@/lib/truncate";
+import { productImg } from "@/lib/productImg";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ReferenceDot } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -45,11 +46,20 @@ function PriceHistory({ product }) {
       {/* Hero header */}
       <div className="pb-5">
         <div className="mb-3 flex items-start justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-semibold leading-snug">{product.name}</h2>
-            {product.brand && (
-              <p className="mt-0.5 text-sm font-medium text-muted-foreground">{product.brand}</p>
+          <div className="flex items-start gap-4">
+            {productImg(product.id) && (
+              <img
+                src={productImg(product.id)}
+                alt=""
+                className="size-16 rounded-lg object-contain bg-white shrink-0"
+              />
             )}
+            <div>
+              <h2 className="text-lg font-semibold leading-snug">{product.name}</h2>
+              {product.brand && (
+                <p className="mt-0.5 text-sm font-medium text-muted-foreground">{product.brand}</p>
+              )}
+            </div>
           </div>
           <div className="flex items-center gap-2 shrink-0 mt-0.5">
             <CategoryBadge category={product.category} />
@@ -363,10 +373,21 @@ export default function Products({ productList }) {
                     onClick={() => setSelected(p)}
                   >
                     <TableCell>
-                      <p className="font-medium" title={p.name.length > 50 ? p.name : undefined}>
-                        {truncate(p.name, 50)}
-                      </p>
-                      {p.brand && <p className="text-xs text-muted-foreground">{p.brand}</p>}
+                      <div className="flex items-center gap-3">
+                        {productImg(p.id) && (
+                          <img
+                            src={productImg(p.id)}
+                            alt=""
+                            className="size-9 rounded object-contain bg-white shrink-0"
+                          />
+                        )}
+                        <div>
+                          <p className="font-medium" title={p.name.length > 50 ? p.name : undefined}>
+                            {truncate(p.name, 50)}
+                          </p>
+                          {p.brand && <p className="text-xs text-muted-foreground">{p.brand}</p>}
+                        </div>
+                      </div>
                     </TableCell>
                     <TableCell>
                       <CategoryBadge category={p.category} />

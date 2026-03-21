@@ -121,8 +121,9 @@ Response: `{ order, grouped_items: [{ group_name, group_items }], additional_ord
 
 ### Product images
 ```
-https://www.ebag.bg/media/catalog/product/{main_image_id}.jpg
+https://www.ebag.bg/products/{productId}/images/0/200/webp
 ```
+Where `productId` is `product_saved.id`. The `0` is the image index (main image). Use `200` for thumbnails or `800` for full size.
 
 ## Data model (processOrders.js output)
 

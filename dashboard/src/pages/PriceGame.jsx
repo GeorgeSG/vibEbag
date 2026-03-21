@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { CategoryBadge } from "@/components/ui/category-badge";
 import { StatTile } from "@/components/ui/stat-tile";
 import { fmt, fmtDate } from "@/lib/fmt";
+import { productImg } from "@/lib/productImg";
 
 const ROUNDS = 10;
 
@@ -357,8 +358,19 @@ export default function PriceGame({ productList }) {
                 {results.map((r, i) => (
                   <tr key={i} className="border-b last:border-0">
                     <td className="px-4 py-2.5">
-                      <div className="font-medium">{r.product.name}</div>
-                      <div className="text-xs text-muted-foreground">{fmtDate(r.date)}</div>
+                      <div className="flex items-center gap-3">
+                        {productImg(r.product.id) && (
+                          <img
+                            src={productImg(r.product.id)}
+                            alt=""
+                            className="size-9 rounded object-contain bg-white shrink-0"
+                          />
+                        )}
+                        <div>
+                          <div className="font-medium">{r.product.name}</div>
+                          <div className="text-xs text-muted-foreground">{fmtDate(r.date)}</div>
+                        </div>
+                      </div>
                     </td>
                     <td className="px-4 py-2.5 text-right tabular-nums">{fmt(r.guess)} &euro;</td>
                     <td className="px-4 py-2.5 text-right tabular-nums">{fmt(r.actual)} &euro;</td>
@@ -422,15 +434,24 @@ export default function PriceGame({ productList }) {
       <Card>
         <CardContent className="p-6">
           {/* Product info */}
-          <div className="mb-6">
-            <CategoryBadge category={current.product.category} />
-            <h2 className="mt-3 text-2xl font-bold tracking-tight">{current.product.name}</h2>
-            {current.product.brand && (
-              <p className="mt-1 text-sm text-muted-foreground">{current.product.brand}</p>
+          <div className="mb-6 flex items-start gap-5">
+            {productImg(current.product.id) && (
+              <img
+                src={productImg(current.product.id)}
+                alt=""
+                className="size-24 rounded-xl object-contain bg-white shrink-0"
+              />
             )}
-            <p className="mt-3 inline-block rounded-md bg-muted px-3 py-1.5 text-sm">
-              Купено на <span className="font-medium">{fmtDate(current.entry.date)}</span>
-            </p>
+            <div>
+              <CategoryBadge category={current.product.category} />
+              <h2 className="mt-3 text-2xl font-bold tracking-tight">{current.product.name}</h2>
+              {current.product.brand && (
+                <p className="mt-1 text-sm text-muted-foreground">{current.product.brand}</p>
+              )}
+              <p className="mt-3 inline-block rounded-md bg-muted px-3 py-1.5 text-sm">
+                Купено на <span className="font-medium">{fmtDate(current.entry.date)}</span>
+              </p>
+            </div>
           </div>
 
           {phase === "guessing" && (

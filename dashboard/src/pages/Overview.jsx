@@ -13,6 +13,7 @@ import {
 import { categoryColor } from "@/lib/categoryColors";
 import { fmt, fmtDate } from "@/lib/fmt";
 import { truncate } from "@/lib/truncate";
+import { productImg } from "@/lib/productImg";
 import { EBagLink } from "@/components/ui/ebag-link";
 import { CategoryBadge } from "@/components/ui/category-badge";
 import { StatTile } from "@/components/ui/stat-tile";
@@ -332,18 +333,29 @@ export default function Overview({ data }) {
             <ul className="grid grid-cols-2 divide-y divide-border gap-x-8">
               {inflationProducts.map((p) => (
                 <li key={p.name} className="py-2.5">
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="text-sm font-medium leading-snug">{truncate(p.name, 35)}</span>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-sm font-semibold text-red-500">+{p.pctIncrease}%</span>
-                      <EBagLink type="product" id={p.id} />
+                  <div className="flex items-start gap-3">
+                    {productImg(p.id) && (
+                      <img
+                        src={productImg(p.id)}
+                        alt=""
+                        className="size-10 rounded object-contain bg-white shrink-0 mt-0.5"
+                      />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <span className="text-sm font-medium leading-snug">{truncate(p.name, 35)}</span>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="text-sm font-semibold text-red-500">+{p.pctIncrease}%</span>
+                          <EBagLink type="product" id={p.id} />
+                        </div>
+                      </div>
+                      <div className="mt-1 flex items-center gap-2">
+                        <CategoryBadge category={p.category} />
+                        <span className="text-xs text-muted-foreground tabular-nums">
+                          {fmt(p.prevMax)} € → {fmt(p.latest)} €
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="mt-1 flex items-center gap-2">
-                    <CategoryBadge category={p.category} />
-                    <span className="text-xs text-muted-foreground tabular-nums">
-                      {fmt(p.prevMax)} € → {fmt(p.latest)} €
-                    </span>
                   </div>
                 </li>
               ))}
