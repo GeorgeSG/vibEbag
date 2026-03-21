@@ -1,6 +1,5 @@
-data/
-dashboard/public/data/
 node_modules/
-scraper/node_modules/
-dashboard/node_modules/
-dashboard/dist/
+data/
+dist/
+*.log
+.DS_Store
