@@ -1,5 +1,5 @@
 import { Component, useCallback, useEffect, useState } from "react";
-import { BrowserRouter, NavLink, Route, Routes } from "react-router-dom";
+import { BrowserRouter, NavLink, Route, Routes, useLocation } from "react-router-dom";
 import { Moon, Sun, Heart, Bot, RefreshCw, AlertCircle, LogIn, Crosshair } from "lucide-react";
 import { LogViewer } from "@/components/ui/log-viewer";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +13,22 @@ import Overview from "./pages/Overview";
 import Products from "./pages/Products";
 import Orders from "./pages/Orders";
 import PriceGame from "./pages/PriceGame";
+
+// --- AnimatedRoutes ---
+
+function AnimatedRoutes({ data }) {
+  const location = useLocation();
+  return (
+    <div key={location.pathname} className="animate-fade-in">
+      <Routes location={location}>
+        <Route path="/" element={<Overview data={data} />} />
+        <Route path="/products" element={<Products productList={data.productList} />} />
+        <Route path="/orders" element={<Orders orderList={data.orderList} />} />
+        <Route path="/realitest" element={<PriceGame productList={data.productList} />} />
+      </Routes>
+    </div>
+  );
+}
 
 // --- ErrorBoundary ---
 
@@ -335,12 +351,7 @@ export default function App() {
             </div>
           ) : data ? (
             <ErrorBoundary>
-              <Routes>
-                <Route path="/" element={<Overview data={data} />} />
-                <Route path="/products" element={<Products productList={data.productList} />} />
-                <Route path="/orders" element={<Orders orderList={data.orderList} />} />
-                <Route path="/realitest" element={<PriceGame productList={data.productList} />} />
-              </Routes>
+              <AnimatedRoutes data={data} />
             </ErrorBoundary>
           ) : (
             <div className="flex min-h-screen items-center justify-center">
