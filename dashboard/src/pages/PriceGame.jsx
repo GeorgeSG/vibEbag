@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Crosshair, ArrowRight, RotateCcw, Flame, Tag, Delete, Trophy } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -31,22 +31,27 @@ function getScore(guess, actual) {
   return { points, pctOff, label };
 }
 
-const HIGH_SCORE_KEY = "vibebag-price-game-high-score";
+const LEADERBOARD_KEY = "vibebag-price-game-leaderboard";
 
-function loadHighScore() {
+function loadLeaderboard() {
   try {
-    return parseInt(localStorage.getItem(HIGH_SCORE_KEY), 10) || 0;
+    return JSON.parse(localStorage.getItem(LEADERBOARD_KEY)) || [];
   } catch {
-    return 0;
+    return [];
   }
 }
 
-function saveHighScore(score) {
+function saveToLeaderboard(score) {
+  const board = loadLeaderboard();
+  board.push({ score, date: new Date().toISOString() });
+  board.sort((a, b) => b.score - a.score);
+  const top5 = board.slice(0, 5);
   try {
-    localStorage.setItem(HIGH_SCORE_KEY, String(score));
+    localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(top5));
   } catch {
     /* noop */
   }
+  return top5;
 }
 
 function scoreColor(points) {
@@ -189,20 +194,41 @@ function buildRounds(productList) {
 }
 
 export default function PriceGame({ productList }) {
-  const [rounds, setRounds] = useState(() => buildRounds(productList));
+  const [rounds, setRounds] = useState([]);
   const [roundIndex, setRoundIndex] = useState(0);
   const [guess, setGuess] = useState("");
-  const [phase, setPhase] = useState("guessing"); // guessing | revealed | finished
+  const [phase, setPhase] = useState("intro"); // intro | guessing | revealed | finished
   const [results, setResults] = useState([]);
   const [streak, setStreak] = useState(0);
   const [bestStreak, setBestStreak] = useState(0);
-  const [highScore, setHighScore] = useState(loadHighScore);
+  const [leaderboard, setLeaderboard] = useState(loadLeaderboard);
   const [rating, setRating] = useState(null);
   const inputRef = useRef(null);
+
+  const highScore = leaderboard.length > 0 ? leaderboard[0].score : 0;
+
+  // Pick 9 random product IDs for the intro hero grid
+  const heroProducts = useMemo(() => {
+    const shuffled = fisherYatesShuffle([...productList].filter((p) => p.id));
+    return shuffled.slice(0, 9);
+  }, [productList]);
 
   const current = rounds.length > 0 ? rounds[roundIndex] : null;
   const totalRounds = rounds.length;
   const maxPossible = totalRounds * 100;
+
+  function handleStart() {
+    const built = buildRounds(productList);
+    if (built.length === 0) return;
+    setRounds(built);
+    setRoundIndex(0);
+    setGuess("");
+    setResults([]);
+    setStreak(0);
+    setBestStreak(0);
+    setRating(null);
+    setPhase("guessing");
+  }
 
   function handleGuess() {
     const parsed = parseFloat(guess);
@@ -234,10 +260,8 @@ export default function PriceGame({ productList }) {
   function handleNext() {
     if (roundIndex + 1 >= totalRounds) {
       const finalScore = results.reduce((s, r) => s + r.points, 0);
-      if (finalScore > highScore) {
-        setHighScore(finalScore);
-        saveHighScore(finalScore);
-      }
+      const newBoard = saveToLeaderboard(finalScore);
+      setLeaderboard(newBoard);
       setRating(getRating(finalScore));
       setPhase("finished");
     } else {
@@ -269,7 +293,7 @@ export default function PriceGame({ productList }) {
     }
   }, [roundIndex, phase]);
 
-  if (rounds.length === 0) {
+  if (productList.length === 0) {
     return (
       <div className="mx-auto max-w-2xl px-6 py-16 text-center">
         <Crosshair size={48} className="mx-auto mb-4 text-muted-foreground" />
@@ -278,18 +302,80 @@ export default function PriceGame({ productList }) {
     );
   }
 
-  function handleRestart() {
-    setRounds(buildRounds(productList));
-    setRoundIndex(0);
-    setGuess("");
-    setPhase("guessing");
-    setResults([]);
-    setStreak(0);
-    setBestStreak(0);
-    setRating(null);
-  }
-
   const totalScore = results.reduce((sum, r) => sum + r.points, 0);
+
+  // --- Intro screen ---
+  if (phase === "intro") {
+    return (
+      <div className="mx-auto max-w-2xl px-6 py-8">
+        <Card>
+          <CardContent className="p-8 text-center">
+            {/* Product image grid */}
+            <div className="mx-auto mb-6 grid w-fit grid-cols-3 gap-2">
+              {heroProducts.map((p) => (
+                <div
+                  key={p.id}
+                  className="size-20 overflow-hidden rounded-xl border bg-white p-2"
+                >
+                  <img
+                    src={productImg(p.id)}
+                    alt=""
+                    className="size-full object-contain"
+                  />
+                </div>
+              ))}
+            </div>
+
+            <h1 className="text-3xl font-bold tracking-tight">Реалитест</h1>
+            <p className="mt-2 text-muted-foreground">
+              Познай цената на {ROUNDS} продукта от последните ти поръчки.
+            </p>
+            <p className="mt-1 text-muted-foreground">
+              Колкото по-близо до реалната цена, толкова повече точки — до 100 на въпрос.
+            </p>
+
+            <div className="mt-8">
+              <Button
+                size="lg"
+                onClick={handleStart}
+                style={{ backgroundColor: "var(--brand)" }}
+                className="gap-2 px-8 py-6 text-lg text-white hover:opacity-90"
+              >
+                <Crosshair size={20} />
+                Започни играта
+              </Button>
+            </div>
+
+            {leaderboard.length > 0 && (
+              <div className="mt-8">
+                <p className="mb-3 text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                  Топ резултати
+                </p>
+                <div className="mx-auto max-w-xs">
+                  {leaderboard.map((entry, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center justify-between border-b py-2 last:border-0 text-sm"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="w-5 text-center font-semibold text-muted-foreground">
+                          {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}.`}
+                        </span>
+                        <span className="tabular-nums font-medium">{entry.score} точки</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {fmtDate(entry.date.slice(0, 10))}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   // --- Finished screen ---
   if (phase === "finished") {
@@ -307,7 +393,7 @@ export default function PriceGame({ productList }) {
           </p>
           <p className="mt-2 text-3xl">{rating.emoji}</p>
           <p className="mt-1 text-lg font-medium text-muted-foreground">{rating.title}</p>
-          {totalScore >= highScore && (
+          {leaderboard.length > 0 && totalScore >= leaderboard[0].score && (
             <p className="mt-1 text-sm font-semibold text-orange-500">Нов рекорд!</p>
           )}
         </div>
@@ -390,7 +476,7 @@ export default function PriceGame({ productList }) {
         </Card>
 
         <div className="mt-6 text-center">
-          <Button onClick={handleRestart} className="gap-2">
+          <Button onClick={handleStart} className="gap-2">
             <RotateCcw size={16} />
             Играй пак
           </Button>
