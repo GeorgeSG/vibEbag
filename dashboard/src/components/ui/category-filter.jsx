@@ -6,11 +6,7 @@ import { categoryColor } from "@/lib/categoryColors";
 
 export function CategoryFilter({ categories, selected, onChange }) {
   function toggle(cat) {
-    onChange(
-      selected.includes(cat)
-        ? selected.filter((c) => c !== cat)
-        : [...selected, cat]
-    );
+    onChange(selected.includes(cat) ? selected.filter((c) => c !== cat) : [...selected, cat]);
   }
 
   return (
@@ -27,13 +23,19 @@ export function CategoryFilter({ categories, selected, onChange }) {
                     key={c}
                     variant="outline"
                     className="text-xs py-0 shrink-0"
-                    style={{ backgroundColor: categoryColor(c) + "22", color: categoryColor(c), borderColor: categoryColor(c) + "55" }}
+                    style={{
+                      backgroundColor: categoryColor(c) + "22",
+                      color: categoryColor(c),
+                      borderColor: categoryColor(c) + "55",
+                    }}
                   >
                     {c}
                   </Badge>
                 ))}
                 {selected.length > 2 && (
-                  <span className="shrink-0 text-xs text-muted-foreground">+{selected.length - 2}</span>
+                  <span className="shrink-0 text-xs text-muted-foreground">
+                    +{selected.length - 2}
+                  </span>
                 )}
               </>
             )}
@@ -43,7 +45,9 @@ export function CategoryFilter({ categories, selected, onChange }) {
       </PopoverTrigger>
       <PopoverContent className="w-64 p-1" align="end">
         <div className="flex items-center justify-between px-2 py-1.5 mb-1">
-          <span className="text-xs font-medium text-muted-foreground uppercase tracking-widest">Категории</span>
+          <span className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
+            Категории
+          </span>
           {selected.length > 0 && (
             <button
               onClick={() => onChange([])}
@@ -62,16 +66,22 @@ export function CategoryFilter({ categories, selected, onChange }) {
                 onClick={() => toggle(cat)}
                 className={cn(
                   "flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm transition-colors hover:bg-muted",
-                  active && "text-foreground font-medium"
+                  active && "text-foreground font-medium",
                 )}
               >
-                <div className={cn(
-                  "flex size-4 shrink-0 items-center justify-center rounded border",
-                  active ? "border-transparent text-white" : "border-input"
-                )} style={active ? { backgroundColor: categoryColor(cat) } : {}}>
+                <div
+                  className={cn(
+                    "flex size-4 shrink-0 items-center justify-center rounded border",
+                    active ? "border-transparent text-white" : "border-input",
+                  )}
+                  style={active ? { backgroundColor: categoryColor(cat) } : {}}
+                >
                   {active && <Check size={11} />}
                 </div>
-                <span className="size-2 shrink-0 rounded-full" style={{ background: categoryColor(cat) }} />
+                <span
+                  className="size-2 shrink-0 rounded-full"
+                  style={{ background: categoryColor(cat) }}
+                />
                 {cat}
               </button>
             );

@@ -121,9 +121,7 @@ async function main() {
   const orders = await fetchAllOrders(cookieHeader, firstPage);
 
   // Load existing details and skip already-fetched orders
-  const existing = existsSync(DETAILS_FILE)
-    ? JSON.parse(readFileSync(DETAILS_FILE, "utf-8"))
-    : [];
+  const existing = existsSync(DETAILS_FILE) ? JSON.parse(readFileSync(DETAILS_FILE, "utf-8")) : [];
   const existingIds = new Set(existing.map((d) => d.encrypted_id));
   const toFetch = orders.filter((o) => !existingIds.has(o.encrypted_id));
 
@@ -131,7 +129,9 @@ async function main() {
     console.log("\nВсички поръчки са актуални.");
     return;
   }
-  console.log(`\nЗареждане на детайли за ${toFetch.length} нови поръчки (${existingIds.size} вече кеширани)...`);
+  console.log(
+    `\nЗареждане на детайли за ${toFetch.length} нови поръчки (${existingIds.size} вече кеширани)...`,
+  );
 
   let done = 0;
   const tasks = toFetch.map((order) => async () => {
@@ -150,4 +150,7 @@ async function main() {
   console.log(`Запазени ${allDetails.length} поръчки.`);
 }
 
-main().catch((err) => { console.error(err); process.exit(1); });
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

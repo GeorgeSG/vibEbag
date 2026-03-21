@@ -3,9 +3,11 @@ import { TableHead } from "@/components/ui/table";
 
 export function SortIcon({ col, sortKey, dir }) {
   if (col !== sortKey) return <ArrowUpDown size={13} className="ml-1 inline opacity-30" />;
-  return dir === "asc"
-    ? <ArrowUp size={13} className="ml-1 inline text-foreground" />
-    : <ArrowDown size={13} className="ml-1 inline text-foreground" />;
+  return dir === "asc" ? (
+    <ArrowUp size={13} className="ml-1 inline text-foreground" />
+  ) : (
+    <ArrowDown size={13} className="ml-1 inline text-foreground" />
+  );
 }
 
 export function SortHead({ col, sortKey, sortDir, onSort, children, className = "" }) {

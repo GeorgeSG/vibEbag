@@ -21,7 +21,12 @@ function loadCredentials() {
 
 function prompt(question) {
   const rl = createInterface({ input: process.stdin, output: process.stdout });
-  return new Promise((resolve) => rl.question(question, (ans) => { rl.close(); resolve(ans); }));
+  return new Promise((resolve) =>
+    rl.question(question, (ans) => {
+      rl.close();
+      resolve(ans);
+    }),
+  );
 }
 
 async function promptPassword(question) {
@@ -58,8 +63,8 @@ async function main() {
   if (email && password) {
     console.log(`Намерени данни за вход от data/credentials.json (${email})`);
   } else {
-    email = email ?? await prompt("Имейл: ");
-    password = password ?? await promptPassword("Парола: ");
+    email = email ?? (await prompt("Имейл: "));
+    password = password ?? (await promptPassword("Парола: "));
     writeFileSync(CREDENTIALS_FILE, JSON.stringify({ email, password }, null, 2));
     console.log(`Данните за вход са запазени.`);
   }
@@ -74,7 +79,7 @@ async function main() {
 
   // Dismiss cookie consent banner if present
   try {
-    await page.click('#CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll', { timeout: 5000 });
+    await page.click("#CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll", { timeout: 5000 });
   } catch {
     // Banner didn't appear, continue
   }
@@ -98,4 +103,7 @@ async function main() {
   await browser.close();
 }
 
-main().catch((err) => { console.error(err); process.exit(1); });
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

@@ -1,6 +1,13 @@
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 
-export function TablePagination({ page, pageSize, total, totalPages, onPageChange, onPageSizeChange }) {
+export function TablePagination({
+  page,
+  pageSize,
+  total,
+  totalPages,
+  onPageChange,
+  onPageSizeChange,
+}) {
   if (totalPages <= 1) return null;
 
   const pages = [];
@@ -18,14 +25,18 @@ export function TablePagination({ page, pageSize, total, totalPages, onPageChang
   return (
     <div className="flex items-center justify-between border-t px-4 py-3 text-xs text-muted-foreground">
       <div className="flex items-center gap-3">
-        <span>{page * pageSize + 1}–{Math.min((page + 1) * pageSize, total)} от {total}</span>
+        <span>
+          {page * pageSize + 1}–{Math.min((page + 1) * pageSize, total)} от {total}
+        </span>
         <Select value={String(pageSize)} onValueChange={(v) => onPageSizeChange(Number(v))}>
           <SelectTrigger className="h-7 w-auto text-xs">
             <span>{pageSize} на страница</span>
           </SelectTrigger>
           <SelectContent>
             {[15, 25, 50, 100].map((n) => (
-              <SelectItem key={n} value={String(n)} className="text-xs">{n} на страница</SelectItem>
+              <SelectItem key={n} value={String(n)} className="text-xs">
+                {n} на страница
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -40,7 +51,9 @@ export function TablePagination({ page, pageSize, total, totalPages, onPageChang
         </button>
         {items.map((item) =>
           typeof item === "string" ? (
-            <span key={item} className="px-1">…</span>
+            <span key={item} className="px-1">
+              …
+            </span>
           ) : (
             <button
               key={item}
@@ -49,7 +62,7 @@ export function TablePagination({ page, pageSize, total, totalPages, onPageChang
             >
               {item + 1}
             </button>
-          )
+          ),
         )}
         <button
           onClick={() => onPageChange(page + 1)}

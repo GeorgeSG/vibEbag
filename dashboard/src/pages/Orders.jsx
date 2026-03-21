@@ -11,7 +11,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 
 function OrderDetail({ order }) {
@@ -35,9 +40,27 @@ function OrderDetail({ order }) {
           </a>
         </div>
         <div className="grid grid-cols-3 gap-3 pt-1">
-          <StatTile variant="sheet" label="Продукти" value={order.itemCount} color="#6366f1" icon={ShoppingCart} />
-          <StatTile variant="sheet" label="Общо похарчено" value={`${fmt(order.total)} €`} color="var(--brand)" icon={CreditCard} />
-          <StatTile variant="sheet" label="Спестено" value={`${fmt(order.saved)} €`} color="#10b981" icon={BadgePercent} />
+          <StatTile
+            variant="sheet"
+            label="Продукти"
+            value={order.itemCount}
+            color="#6366f1"
+            icon={ShoppingCart}
+          />
+          <StatTile
+            variant="sheet"
+            label="Общо похарчено"
+            value={`${fmt(order.total)} €`}
+            color="var(--brand)"
+            icon={CreditCard}
+          />
+          <StatTile
+            variant="sheet"
+            label="Спестено"
+            value={`${fmt(order.saved)} €`}
+            color="#10b981"
+            icon={BadgePercent}
+          />
         </div>
       </div>
 
@@ -63,8 +86,12 @@ function OrderDetail({ order }) {
                   <TableCell>
                     <CategoryBadge category={item.category} />
                   </TableCell>
-                  <TableCell className="text-right tabular-nums text-muted-foreground">{item.qty}</TableCell>
-                  <TableCell className="text-right tabular-nums text-muted-foreground">{fmt(item.unitPrice)} €</TableCell>
+                  <TableCell className="text-right tabular-nums text-muted-foreground">
+                    {item.qty}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums text-muted-foreground">
+                    {fmt(item.unitPrice)} €
+                  </TableCell>
                   <TableCell className="text-right tabular-nums pr-4">
                     <span className={item.wasPromo ? "text-emerald-500" : ""}>
                       {fmt(item.total)} €
@@ -77,7 +104,12 @@ function OrderDetail({ order }) {
                     {item.productId && (
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <a href={`https://www.ebag.bg/?product=${item.productId}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors">
+                          <a
+                            href={`https://www.ebag.bg/?product=${item.productId}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors"
+                          >
                             <ExternalLink size={13} />
                           </a>
                         </TooltipTrigger>
@@ -112,7 +144,10 @@ export default function Orders({ orderList }) {
     setPage(0);
   }
 
-  function handlePageSize(v) { setPageSize(v); setPage(0); }
+  function handlePageSize(v) {
+    setPageSize(v);
+    setPage(0);
+  }
 
   const sorted = useMemo(() => {
     return [...orderList].sort((a, b) => {
@@ -121,7 +156,10 @@ export default function Orders({ orderList }) {
       if (av == null && bv == null) return 0;
       if (av == null) return 1;
       if (bv == null) return -1;
-      const cmp = typeof av === "number" && typeof bv === "number" ? av - bv : String(av).localeCompare(String(bv));
+      const cmp =
+        typeof av === "number" && typeof bv === "number"
+          ? av - bv
+          : String(av).localeCompare(String(bv));
       return sortDir === "asc" ? cmp : -cmp;
     });
   }, [orderList, sortKey, sortDir]);
@@ -147,11 +185,37 @@ export default function Orders({ orderList }) {
           <Table>
             <TableHeader>
               <TableRow>
-                <SortHead col="date" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>Дата</SortHead>
+                <SortHead col="date" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>
+                  Дата
+                </SortHead>
                 <TableHead>ID</TableHead>
-                <SortHead col="itemCount" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} className="text-right">Продукти</SortHead>
-                <SortHead col="total" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} className="text-right">Сума</SortHead>
-                <SortHead col="saved" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} className="text-right">Спестено</SortHead>
+                <SortHead
+                  col="itemCount"
+                  sortKey={sortKey}
+                  sortDir={sortDir}
+                  onSort={handleSort}
+                  className="text-right"
+                >
+                  Продукти
+                </SortHead>
+                <SortHead
+                  col="total"
+                  sortKey={sortKey}
+                  sortDir={sortDir}
+                  onSort={handleSort}
+                  className="text-right"
+                >
+                  Сума
+                </SortHead>
+                <SortHead
+                  col="saved"
+                  sortKey={sortKey}
+                  sortDir={sortDir}
+                  onSort={handleSort}
+                  className="text-right"
+                >
+                  Спестено
+                </SortHead>
                 <TableHead className="text-right">Линк</TableHead>
               </TableRow>
             </TableHeader>
@@ -166,11 +230,18 @@ export default function Orders({ orderList }) {
                   <TableCell className="font-mono text-xs text-muted-foreground">{o.id}</TableCell>
                   <TableCell className="text-right tabular-nums">{o.itemCount}</TableCell>
                   <TableCell className="text-right tabular-nums">{fmt(o.total)} €</TableCell>
-                  <TableCell className="text-right tabular-nums text-emerald-600">{fmt(o.saved)} €</TableCell>
+                  <TableCell className="text-right tabular-nums text-emerald-600">
+                    {fmt(o.saved)} €
+                  </TableCell>
                   <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <a href={`https://www.ebag.bg/orders/${o.id}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors">
+                        <a
+                          href={`https://www.ebag.bg/orders/${o.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors"
+                        >
                           <ExternalLink size={13} />
                         </a>
                       </TooltipTrigger>

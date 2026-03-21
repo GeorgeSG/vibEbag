@@ -29,8 +29,7 @@ function sseJob(res, req, script) {
   child.stderr.on("data", (chunk) => send("log", chunk.toString()));
 
   child.on("close", (code) => {
-    send(code === 0 ? "done" : "error",
-      code === 0 ? "Готово." : `Процесът завърши с код ${code}`);
+    send(code === 0 ? "done" : "error", code === 0 ? "Готово." : `Процесът завърши с код ${code}`);
     res.end();
   });
 
@@ -45,7 +44,9 @@ export default function scraperPlugin() {
   return {
     name: "vite-plugin-scraper",
     configureServer(server) {
-      const label = process.env.VITE_USE_SEED ? "seed (order-details.dev.json)" : "prod (order-details.json)";
+      const label = process.env.VITE_USE_SEED
+        ? "seed (order-details.dev.json)"
+        : "prod (order-details.json)";
       server.httpServer?.once("listening", () => {
         console.log(`  \x1b[36m➜\x1b[0m  Data: \x1b[1m${label}\x1b[0m`);
       });
@@ -63,7 +64,9 @@ export default function scraperPlugin() {
         const hasCookies = existsSync(COOKIE_FILE);
         let email = null;
         if (hasCredentials) {
-          try { email = JSON.parse(readFileSync(CREDENTIALS_FILE, "utf-8")).email; } catch {}
+          try {
+            email = JSON.parse(readFileSync(CREDENTIALS_FILE, "utf-8")).email;
+          } catch {}
         }
         res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ hasCredentials, hasCookies, email }));
@@ -71,13 +74,23 @@ export default function scraperPlugin() {
 
       // POST /api/credentials — save email + password
       server.middlewares.use("/api/credentials", (req, res) => {
-        if (req.method !== "POST") { res.writeHead(405); res.end(); return; }
+        if (req.method !== "POST") {
+          res.writeHead(405);
+          res.end();
+          return;
+        }
         let body = "";
-        req.on("data", (chunk) => { body += chunk; });
+        req.on("data", (chunk) => {
+          body += chunk;
+        });
         req.on("end", () => {
           try {
             const { email, password } = JSON.parse(body);
-            if (!email || !password) { res.writeHead(400); res.end(JSON.stringify({ error: "Липсващи полета" })); return; }
+            if (!email || !password) {
+              res.writeHead(400);
+              res.end(JSON.stringify({ error: "Липсващи полета" }));
+              return;
+            }
             if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true });
             writeFileSync(CREDENTIALS_FILE, JSON.stringify({ email, password }, null, 2));
             res.setHeader("Content-Type", "application/json");
@@ -98,8 +111,12 @@ export default function scraperPlugin() {
         }
         activeJob = "login";
         const child = sseJob(res, req, "auth.js");
-        child.on("close", () => { activeJob = null; });
-        req.on("close", () => { activeJob = null; });
+        child.on("close", () => {
+          activeJob = null;
+        });
+        req.on("close", () => {
+          activeJob = null;
+        });
       });
 
       // GET /api/scrape — SSE: run fetch-orders.js
@@ -111,8 +128,12 @@ export default function scraperPlugin() {
         }
         activeJob = "scrape";
         const child = sseJob(res, req, "fetch-orders.js");
-        child.on("close", () => { activeJob = null; });
-        req.on("close", () => { activeJob = null; });
+        child.on("close", () => {
+          activeJob = null;
+        });
+        req.on("close", () => {
+          activeJob = null;
+        });
       });
     },
   };

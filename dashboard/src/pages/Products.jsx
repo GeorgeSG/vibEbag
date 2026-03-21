@@ -15,7 +15,12 @@ import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 
 const priceChartConfig = {
@@ -57,9 +62,27 @@ function PriceHistory({ product }) {
           </div>
         </div>
         <div className="grid grid-cols-3 gap-3 pt-1">
-          <StatTile variant="sheet" label="Покупки" value={product.count} color="#6366f1" icon={ShoppingCart} />
-          <StatTile variant="sheet" label="Общо похарчено" value={`${fmt(product.totalSpend)} €`} color="var(--brand)" icon={CreditCard} />
-          <StatTile variant="sheet" label="Средна цена" value={`${fmt(product.avgPrice)} €`} color="#f59e0b" icon={BarChart2} />
+          <StatTile
+            variant="sheet"
+            label="Покупки"
+            value={product.count}
+            color="#6366f1"
+            icon={ShoppingCart}
+          />
+          <StatTile
+            variant="sheet"
+            label="Общо похарчено"
+            value={`${fmt(product.totalSpend)} €`}
+            color="var(--brand)"
+            icon={CreditCard}
+          />
+          <StatTile
+            variant="sheet"
+            label="Средна цена"
+            value={`${fmt(product.avgPrice)} €`}
+            color="#f59e0b"
+            icon={BarChart2}
+          />
         </div>
       </div>
 
@@ -75,13 +98,28 @@ function PriceHistory({ product }) {
             <ChartContainer config={priceChartConfig} className="h-52 w-full">
               <LineChart data={data} margin={{ left: 0, right: 16, top: 16 }}>
                 <CartesianGrid vertical={false} />
-                <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} tick={{ fontSize: 11 }} />
-                <YAxis tickLine={false} axisLine={false} tickMargin={8} unit=" €" width={72} domain={["auto", "auto"]} />
+                <XAxis
+                  dataKey="date"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  tick={{ fontSize: 11 }}
+                />
+                <YAxis
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  unit=" €"
+                  width={72}
+                  domain={["auto", "auto"]}
+                />
                 <ChartTooltip
                   content={
                     <ChartTooltipContent
                       formatter={(v, _, item) => [
-                        <span className="tabular-nums">{fmt(v)} €{item.payload.wasPromo ? " 🟢 промоция" : ""}</span>,
+                        <span className="tabular-nums">
+                          {fmt(v)} €{item.payload.wasPromo ? " 🟢 промоция" : ""}
+                        </span>,
                       ]}
                     />
                   }
@@ -93,20 +131,62 @@ function PriceHistory({ product }) {
                   strokeWidth={2}
                   dot={(props) => {
                     const { cx, cy, payload } = props;
-                    return <circle key={payload.date} cx={cx} cy={cy} r={payload.wasPromo ? 4 : 3} fill={payload.wasPromo ? "#10b981" : "var(--chart-1)"} stroke="#fff" strokeWidth={1.5} />;
+                    return (
+                      <circle
+                        key={payload.date}
+                        cx={cx}
+                        cy={cy}
+                        r={payload.wasPromo ? 4 : 3}
+                        fill={payload.wasPromo ? "#10b981" : "var(--chart-1)"}
+                        stroke="#fff"
+                        strokeWidth={1.5}
+                      />
+                    );
                   }}
                 />
                 {minEntry && (
-                  <ReferenceDot x={minEntry.date} y={minEntry.unitPrice} r={6} fill="#10b981" stroke="#fff" strokeWidth={1.5} label={{ value: `мин ${fmt(min)}`, position: "top", fontSize: 10, fill: "#10b981" }} />
+                  <ReferenceDot
+                    x={minEntry.date}
+                    y={minEntry.unitPrice}
+                    r={6}
+                    fill="#10b981"
+                    stroke="#fff"
+                    strokeWidth={1.5}
+                    label={{
+                      value: `мин ${fmt(min)}`,
+                      position: "top",
+                      fontSize: 10,
+                      fill: "#10b981",
+                    }}
+                  />
                 )}
                 {maxEntry && maxEntry.date !== minEntry?.date && (
-                  <ReferenceDot x={maxEntry.date} y={maxEntry.unitPrice} r={6} fill="#ef4444" stroke="#fff" strokeWidth={1.5} label={{ value: `макс ${fmt(max)}`, position: "top", fontSize: 10, fill: "#ef4444" }} />
+                  <ReferenceDot
+                    x={maxEntry.date}
+                    y={maxEntry.unitPrice}
+                    r={6}
+                    fill="#ef4444"
+                    stroke="#fff"
+                    strokeWidth={1.5}
+                    label={{
+                      value: `макс ${fmt(max)}`,
+                      position: "top",
+                      fontSize: 10,
+                      fill: "#ef4444",
+                    }}
+                  />
                 )}
               </LineChart>
             </ChartContainer>
             <div className="mt-2 flex gap-4 text-xs text-muted-foreground">
-              <span><span className="inline-block size-2 rounded-full bg-[var(--chart-1)] mr-1" />редовна цена</span>
-              <span><span className="inline-block size-2 rounded-full bg-emerald-500 mr-1" />промоция</span>
+              <span>
+                <span className="inline-block size-2 rounded-full bg-[var(--chart-1)] mr-1" />
+                редовна цена
+              </span>
+              <span>
+                <span className="inline-block size-2 rounded-full bg-emerald-500 mr-1" />
+                промоция
+              </span>
             </div>
           </>
         )}
@@ -121,7 +201,7 @@ function PriceHistory({ product }) {
               <TableRow className="bg-muted/40">
                 <TableHead
                   className="pl-4 cursor-pointer select-none hover:text-foreground whitespace-nowrap"
-                  onClick={() => setDateDir((d) => d === "desc" ? "asc" : "desc")}
+                  onClick={() => setDateDir((d) => (d === "desc" ? "asc" : "desc"))}
                 >
                   Дата
                   <SortIcon col="date" sortKey="date" dir={dateDir} />
@@ -136,7 +216,9 @@ function PriceHistory({ product }) {
                 const isMax = entry.unitPrice === max;
                 return (
                   <TableRow key={entry.orderId} className="hover:bg-muted/30">
-                    <TableCell className="pl-4 text-muted-foreground">{fmtDate(entry.date)}</TableCell>
+                    <TableCell className="pl-4 text-muted-foreground">
+                      {fmtDate(entry.date)}
+                    </TableCell>
                     <TableCell className="text-right tabular-nums font-medium">
                       <span className={isMin ? "text-emerald-500" : isMax ? "text-red-500" : ""}>
                         {fmt(entry.unitPrice)} €
@@ -153,7 +235,12 @@ function PriceHistory({ product }) {
                     <TableCell className="text-right pr-4">
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <a href={`https://www.ebag.bg/orders/${entry.orderId}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors">
+                          <a
+                            href={`https://www.ebag.bg/orders/${entry.orderId}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors"
+                          >
                             <ExternalLink size={13} />
                           </a>
                         </TooltipTrigger>
@@ -182,7 +269,7 @@ export default function Products({ productList }) {
 
   const categories = useMemo(
     () => [...new Set(productList.map((p) => p.category))].sort(),
-    [productList]
+    [productList],
   );
 
   function handleSort(key) {
@@ -195,20 +282,29 @@ export default function Products({ productList }) {
     setPage(0);
   }
 
-  function handleSearch(v) { setSearch(v); setPage(0); }
-  function handleCategoryFilter(v) { setCategoryFilter(v); setPage(0); }
-  function handlePageSize(v) { setPageSize(v); setPage(0); }
+  function handleSearch(v) {
+    setSearch(v);
+    setPage(0);
+  }
+  function handleCategoryFilter(v) {
+    setCategoryFilter(v);
+    setPage(0);
+  }
+  function handlePageSize(v) {
+    setPageSize(v);
+    setPage(0);
+  }
 
-  const filtered = useMemo(() =>
-    productList.filter((p) => {
-      const matchesSearch =
-        p.name.toLowerCase().includes(search.toLowerCase()) ||
-        (p.brand ?? "").toLowerCase().includes(search.toLowerCase());
-      const matchesCategory =
-        categoryFilter.length === 0 || categoryFilter.includes(p.category);
-      return matchesSearch && matchesCategory;
-    }),
-    [productList, search, categoryFilter]
+  const filtered = useMemo(
+    () =>
+      productList.filter((p) => {
+        const matchesSearch =
+          p.name.toLowerCase().includes(search.toLowerCase()) ||
+          (p.brand ?? "").toLowerCase().includes(search.toLowerCase());
+        const matchesCategory = categoryFilter.length === 0 || categoryFilter.includes(p.category);
+        return matchesSearch && matchesCategory;
+      }),
+    [productList, search, categoryFilter],
   );
 
   const sorted = useMemo(() => {
@@ -256,12 +352,44 @@ export default function Products({ productList }) {
               <TableRow>
                 <TableHead>Продукт</TableHead>
                 <TableHead>Категория</TableHead>
-                <SortHead col="count" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} className="text-right">Покупки</SortHead>
-                <SortHead col="totalSpend" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} className="text-right">Общо</SortHead>
+                <SortHead
+                  col="count"
+                  sortKey={sortKey}
+                  sortDir={sortDir}
+                  onSort={handleSort}
+                  className="text-right"
+                >
+                  Покупки
+                </SortHead>
+                <SortHead
+                  col="totalSpend"
+                  sortKey={sortKey}
+                  sortDir={sortDir}
+                  onSort={handleSort}
+                  className="text-right"
+                >
+                  Общо
+                </SortHead>
                 <TableHead className="text-right">Ср. цена</TableHead>
                 <TableHead className="text-right">Последна цена</TableHead>
-                <SortHead col="firstPurchase" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} className="text-right">Първа покупка</SortHead>
-                <SortHead col="lastPurchase" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} className="text-right">Последна покупка</SortHead>
+                <SortHead
+                  col="firstPurchase"
+                  sortKey={sortKey}
+                  sortDir={sortDir}
+                  onSort={handleSort}
+                  className="text-right"
+                >
+                  Първа покупка
+                </SortHead>
+                <SortHead
+                  col="lastPurchase"
+                  sortKey={sortKey}
+                  sortDir={sortDir}
+                  onSort={handleSort}
+                  className="text-right"
+                >
+                  Последна покупка
+                </SortHead>
                 <TableHead />
               </TableRow>
             </TableHeader>
@@ -298,7 +426,12 @@ export default function Products({ productList }) {
                     <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <a href={`https://www.ebag.bg/?product=${p.id}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors">
+                          <a
+                            href={`https://www.ebag.bg/?product=${p.id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors"
+                          >
                             <ExternalLink size={13} />
                           </a>
                         </TooltipTrigger>
