@@ -210,7 +210,6 @@ export default function Orders({ orderList }) {
                 <SortHead col="date" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>
                   Дата
                 </SortHead>
-                <TableHead>ID</TableHead>
                 <SortHead
                   col="itemCount"
                   sortKey={sortKey}
@@ -249,7 +248,6 @@ export default function Orders({ orderList }) {
                   onClick={() => setSelected(o)}
                 >
                   <TableCell className="font-medium">{fmtDate(o.date)}</TableCell>
-                  <TableCell className="font-mono text-xs text-muted-foreground">{o.id}</TableCell>
                   <TableCell className="text-right tabular-nums">{o.itemCount}</TableCell>
                   <TableCell className="text-right tabular-nums">{fmt(o.total)} €</TableCell>
                   <TableCell className="text-right tabular-nums text-emerald-600">
@@ -262,7 +260,7 @@ export default function Orders({ orderList }) {
               ))}
               {sorted.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
+                  <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
                     Няма намерени поръчки
                   </TableCell>
                 </TableRow>
