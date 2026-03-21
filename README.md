@@ -19,6 +19,7 @@ Some code has been read by humans.
 - 🛍️ **Orders page** — sortable, paginated order list with a detail sheet per order
 - 🥦 **Products page** — sortable/filterable product table with price history chart and purchase detail
   - 📈 **Inflation tracker** — for every unique product, see how its unit price has changed across purchases over time
+- 🎯 **Реалитест** — price guessing game: see a product you bought and try to guess the price, with scoring, streaks, and persistent high scores
 - 🤖 **UI-driven scraping** — login and sync triggered from the browser, with real-time streaming progress
 - 🔐 **Headless Playwright login** — automated session management, credentials stored locally
 - ⚡ **Incremental fetching** — only new orders are fetched on re-sync

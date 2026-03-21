@@ -10,6 +10,7 @@ import {
   AlertCircle,
   X,
   LogIn,
+  Crosshair,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ import { useTheme } from "./hooks/useTheme";
 import Overview from "./pages/Overview";
 import Products from "./pages/Products";
 import Orders from "./pages/Orders";
+import PriceGame from "./pages/PriceGame";
 
 // --- ErrorBoundary ---
 
@@ -372,6 +374,10 @@ export default function App() {
                     </Badge>
                   )}
                 </NavLink>
+                <NavLink to="/realitest" className={navClass}>
+                  <Crosshair size={14} className="mr-1 inline" />
+                  Реалитест
+                </NavLink>
               </nav>
               <div className="ml-auto flex items-center gap-2">
                 <button
@@ -410,6 +416,7 @@ export default function App() {
                 <Route path="/" element={<Overview data={data} />} />
                 <Route path="/products" element={<Products productList={data.productList} />} />
                 <Route path="/orders" element={<Orders orderList={data.orderList} />} />
+                <Route path="/realitest" element={<PriceGame productList={data.productList} />} />
               </Routes>
             </ErrorBoundary>
           ) : (
