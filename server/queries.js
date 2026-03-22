@@ -3,6 +3,10 @@ import { toEur, formatTimeSlot } from "./utils.js";
 
 // --- Data loading ---
 
+/**
+ * Loads all orders and order items (with joined product and category data) from the database.
+ * @returns {{ orders: object[], items: object[] }} Raw database rows.
+ */
 function loadRawData() {
   const orders = db.prepare("SELECT * FROM orders ORDER BY shipping_date DESC").all();
   const items = db
@@ -19,6 +23,12 @@ function loadRawData() {
 
 // --- Aggregators ---
 
+/**
+ * Computes top-level KPI stats: total spend, order count, average basket,
+ * total savings, total tips, and percentage of orders that included a tip.
+ * @param {object[]} orders - All order rows.
+ * @returns {{ totalSpend: number, totalOrders: number, avgBasket: number, totalSaved: number, totalTips: number, tippedPct: number }}
+ */
 function computeKpis(orders) {
   const totalSpend = orders.reduce(
     (sum, o) => sum + toEur(o.final_amount_eur, o.final_amount),
@@ -47,6 +57,12 @@ function computeKpis(orders) {
   return { totalSpend, totalOrders, avgBasket, totalSaved, totalTips, tippedPct };
 }
 
+/**
+ * Aggregates spending by month (YYYY-MM) and computes average basket size per month.
+ * Both arrays are sorted chronologically.
+ * @param {object[]} orders - All order rows.
+ * @returns {{ monthlySpend: { month: string, spend: number }[], avgBasketTrend: { month: string, avg: number }[] }}
+ */
 function computeMonthlySpend(orders) {
   const monthMap = {};
   const monthCountMap = {};
@@ -72,6 +88,11 @@ function computeMonthlySpend(orders) {
   return { monthlySpend, avgBasketTrend };
 }
 
+/**
+ * Counts orders per day of week (Monday–Sunday).
+ * @param {object[]} orders - All order rows.
+ * @returns {{ day: string, count: number }[]} Bulgarian day abbreviations with order counts.
+ */
 function computeOrdersByDay(orders) {
   const DAY_NAMES = ["Пон", "Вт", "Ср", "Чет", "Пет", "Съб", "Нед"];
   const dayMap = {};
@@ -86,6 +107,11 @@ function computeOrdersByDay(orders) {
   }));
 }
 
+/**
+ * Counts orders per delivery time slot (e.g. "09:00–11:00"), sorted chronologically.
+ * @param {object[]} orders - All order rows.
+ * @returns {{ slot: string, count: number }[]}
+ */
 function computeOrdersByTimeSlot(orders) {
   const slotMap = {};
   orders.forEach((o) => {
@@ -98,6 +124,11 @@ function computeOrdersByTimeSlot(orders) {
     .map(([slot, count]) => ({ slot, count }));
 }
 
+/**
+ * Aggregates total spend per product category, sorted by spend descending.
+ * @param {object[]} items - All order item rows (with joined category).
+ * @returns {{ category: string, spend: number }[]}
+ */
 function computeCategorySpend(items) {
   const catMap = {};
   items.forEach((item) => {
@@ -109,6 +140,12 @@ function computeCategorySpend(items) {
     .map(([category, spend]) => ({ category, spend: +spend.toFixed(2) }));
 }
 
+/**
+ * Builds an intermediate map of products keyed by name, accumulating spend, count,
+ * and unit price sum. Used by {@link computeTopProducts} and {@link computeTopByFrequency}.
+ * @param {object[]} items - All order item rows.
+ * @returns {Record<string, { id: number, name: string, spend: number, count: number, unitPriceSum: number, category: string }>}
+ */
 function buildProductMap(items) {
   const productMap = {};
   items.forEach((item) => {
@@ -134,6 +171,11 @@ function buildProductMap(items) {
   return productMap;
 }
 
+/**
+ * Returns the top 15 products ranked by total spend.
+ * @param {Record<string, object>} productMap - Output of {@link buildProductMap}.
+ * @returns {object[]}
+ */
 function computeTopProducts(productMap) {
   return Object.values(productMap)
     .sort((a, b) => b.spend - a.spend)
@@ -141,6 +183,11 @@ function computeTopProducts(productMap) {
     .map((p) => ({ ...p, spend: +p.spend.toFixed(2) }));
 }
 
+/**
+ * Returns the top 15 products ranked by purchase frequency (order count).
+ * @param {Record<string, object>} productMap - Output of {@link buildProductMap}.
+ * @returns {object[]}
+ */
 function computeTopByFrequency(productMap) {
   return Object.values(productMap)
     .sort((a, b) => b.count - a.count)
@@ -148,6 +195,13 @@ function computeTopByFrequency(productMap) {
     .map((p) => ({ ...p, spend: +p.spend.toFixed(2) }));
 }
 
+/**
+ * Builds a complete product catalog with price history, average price, and purchase dates.
+ * Deduplicates price entries per date (keeps last), sorted by purchase count descending.
+ * @param {object[]} orders - All order rows (used to map order IDs to dates).
+ * @param {object[]} items - All order item rows.
+ * @returns {{ id: number, name: string, brand: string, category: string, count: number, totalSpend: number, avgPrice: number, firstPurchase: string, lastPurchase: string, priceHistory: object[] }[]}
+ */
 function computeProductList(orders, items) {
   const orderDateMap = {};
   orders.forEach((o) => {
@@ -209,6 +263,13 @@ function computeProductList(orders, items) {
     .sort((a, b) => b.count - a.count);
 }
 
+/**
+ * Builds the order list with nested line items, and picks the top 5 orders by total.
+ * Orders are sorted by date descending.
+ * @param {object[]} orders - All order rows.
+ * @param {object[]} items - All order item rows.
+ * @returns {{ orderList: object[], topOrders: object[] }}
+ */
 function computeOrderList(orders, items) {
   const orderItemsByOrder = {};
   items.forEach((item) => {
@@ -252,6 +313,12 @@ function computeOrderList(orders, items) {
   return { orderList, topOrders };
 }
 
+/**
+ * Calculates promo dependency per category: what percentage of each category's
+ * spend came from items that were on promotion. Sorted by promo ratio descending.
+ * @param {object[]} items - All order item rows.
+ * @returns {{ category: string, promoRatio: number, promoSpend: number, totalSpend: number }[]}
+ */
 function computePromoDependency(items) {
   const promoCatMap = {};
   items.forEach((item) => {
@@ -275,6 +342,11 @@ function computePromoDependency(items) {
     .sort((a, b) => b.promoRatio - a.promoRatio);
 }
 
+/**
+ * Returns the top 15 brands ranked by total spend.
+ * @param {object[]} items - All order item rows.
+ * @returns {{ brand: string, spend: number, count: number, category: string }[]}
+ */
 function computeTopBrands(items) {
   const brandMap = {};
   items.forEach((item) => {
@@ -296,6 +368,14 @@ function computeTopBrands(items) {
     .map((b) => ({ ...b, spend: +b.spend.toFixed(2) }));
 }
 
+/**
+ * Computes a loyalty score for products purchased at least 3 times.
+ * Score = percentage of active months in which the product was purchased.
+ * Returns the top 15 sorted by loyalty descending.
+ * @param {object[]} orders - All order rows (used to determine total active months).
+ * @param {object[]} productList - Output of {@link computeProductList}.
+ * @returns {{ id: number, name: string, brand: string, category: string, count: number, loyalty: number }[]}
+ */
 function computeLoyaltyScores(orders, productList) {
   const allMonths = [
     ...new Set(orders.map((o) => o.shipping_date?.slice(0, 7)).filter(Boolean)),
@@ -326,6 +406,11 @@ function computeLoyaltyScores(orders, productList) {
 
 // --- Public API ---
 
+/**
+ * Assembles all dashboard data by loading raw data once and running all aggregators.
+ * Returns the full payload consumed by the frontend via GET /api/data.
+ * @returns {object} Dashboard data with KPIs, charts, product/order lists, and rankings.
+ */
 export function getDashboardData() {
   const { orders, items } = loadRawData();
 
@@ -350,6 +435,10 @@ export function getDashboardData() {
   };
 }
 
+/**
+ * Checks whether any orders exist in the database.
+ * @returns {boolean}
+ */
 export function hasData() {
   return db.prepare("SELECT COUNT(*) as c FROM orders").get().c > 0;
 }
