@@ -79,9 +79,17 @@ class ErrorBoundary extends Component {
 
 // --- SyncPanel ---
 
-function SyncPanel({ state, logs, onClose }) {
+function SyncPanel({ state, logs, onClose, onRelogin }) {
   if (state === "idle") return null;
-  return <LogViewer state={state} logs={logs} onClose={onClose} variant="floating" />;
+  return (
+    <LogViewer
+      state={state}
+      logs={logs}
+      onClose={onClose}
+      variant="floating"
+      onRelogin={state === "session-expired" ? onRelogin : undefined}
+    />
+  );
 }
 
 // --- LoginForm ---
@@ -274,8 +282,9 @@ export default function App() {
       })
       .then((s) => {
         setStatus(s);
-        if (thenLoadData && s.hasCredentials && s.hasData) loadData();
-        else if (thenLoadData && s.hasCredentials && !s.hasData) setNoData(true);
+        const loggedIn = s.hasCredentials || s.hasCookies;
+        if (thenLoadData && loggedIn && s.hasData) loadData();
+        else if (thenLoadData && loggedIn && !s.hasData) setNoData(true);
       })
       .catch((err) => setLoadError(err.message));
   }
@@ -378,6 +387,11 @@ export default function App() {
         setSyncState("done");
         es.close();
         loadData();
+      } else if (type === "session-expired") {
+        clearTimeout(timeout);
+        setSyncLogs((prev) => prev + "\n" + text);
+        setSyncState("session-expired");
+        es.close();
       } else if (type === "error") {
         clearTimeout(timeout);
         setSyncLogs((prev) => prev + "\n" + text);
@@ -563,7 +577,15 @@ export default function App() {
             </span>
           </footer>
 
-          <SyncPanel state={syncState} logs={syncLogs} onClose={() => setSyncState("idle")} />
+          <SyncPanel
+            state={syncState}
+            logs={syncLogs}
+            onClose={() => setSyncState("idle")}
+            onRelogin={() => {
+              setSyncState("idle");
+              setStatus({ ...status, hasCredentials: false, hasCookies: false });
+            }}
+          />
         </div>
       </TooltipProvider>
     </BrowserRouter>
