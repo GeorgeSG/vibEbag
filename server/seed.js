@@ -5,16 +5,12 @@
 
 import { faker } from "@faker-js/faker";
 import { writeFileSync, existsSync, mkdirSync } from "fs";
-import { resolve, dirname } from "path";
-import { fileURLToPath } from "url";
+import { resolve } from "path";
+import { DATA_DIR, BGN_TO_EUR } from "./config.js";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const OUT_FILE = resolve(__dirname, "../data/order-details.dev.json");
-const DATA_DIR = resolve(__dirname, "../data");
+const OUT_FILE = resolve(DATA_DIR, "order-details.dev.json");
 
 faker.seed(1234);
-
-const BGN_TO_EUR = 1.95583;
 const eur = (bgn) => +(bgn / BGN_TO_EUR).toFixed(2);
 const fmt = (v) => (+v).toFixed(2);
 const pick = (...arr) => faker.helpers.arrayElement(arr.flat());

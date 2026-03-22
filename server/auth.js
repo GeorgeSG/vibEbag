@@ -1,12 +1,7 @@
 import { chromium } from "playwright";
 import { createInterface } from "readline";
 import { writeFileSync, readFileSync, existsSync } from "fs";
-import { resolve, dirname } from "path";
-import { fileURLToPath } from "url";
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const COOKIE_FILE = resolve(__dirname, "../data/cookies.json");
-const CREDENTIALS_FILE = resolve(__dirname, "../data/credentials.json");
+import { COOKIE_FILE, CREDENTIALS_FILE } from "./config.js";
 
 const LOGIN_URL = "https://www.ebag.bg/login?next=/";
 
@@ -14,7 +9,8 @@ function loadCredentials() {
   if (!existsSync(CREDENTIALS_FILE)) return {};
   try {
     return JSON.parse(readFileSync(CREDENTIALS_FILE, "utf-8"));
-  } catch {
+  } catch (err) {
+    console.warn("Could not parse credentials:", err.message);
     return {};
   }
 }

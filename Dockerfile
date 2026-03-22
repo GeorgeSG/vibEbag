@@ -11,6 +11,11 @@ RUN npm run build
 # ---- Stage 2: Install server production deps (Linux-native) ----
 FROM node:25-bookworm-slim AS server-deps
 
+# better-sqlite3 needs build tools for its native addon
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends python3 make g++ \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /build/server
 COPY server/package.json ./
 RUN npm install --omit=dev
@@ -33,7 +38,8 @@ WORKDIR /app
 
 # Server with Linux-built node_modules
 COPY --from=server-deps /build/server/node_modules ./server/node_modules
-COPY server/index.js server/auth.js server/fetch-orders.js server/package.json ./server/
+COPY server/index.js server/db.js server/queries.js server/import.js \
+     server/auth.js server/fetch-orders.js server/package.json ./server/
 
 # Install Playwright Chromium browser binary
 RUN cd server && npx playwright install chromium

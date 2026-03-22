@@ -1,30 +1,15 @@
 import express from "express";
 import { spawn } from "child_process";
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from "fs";
+import { getDashboardData, hasData } from "./queries.js";
+import { importFromJson } from "./import.js";
 import {
-  createReadStream,
-  existsSync,
-  readFileSync,
-  writeFileSync,
-  mkdirSync,
-} from "fs";
-import { resolve, dirname } from "path";
-import { fileURLToPath } from "url";
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = resolve(__dirname, "../data");
-const DIST_DIR = resolve(__dirname, "../dashboard/dist");
-
-const DATA_FILE = process.env.USE_SEED
-  ? resolve(DATA_DIR, "order-details.dev.json")
-  : resolve(DATA_DIR, "order-details.json");
-const COOKIE_FILE = resolve(DATA_DIR, "cookies.json");
-const CREDENTIALS_FILE = resolve(DATA_DIR, "credentials.json");
-
-const PORT = process.env.PORT || 3001;
+  DATA_DIR, DIST_DIR, DATA_FILE, COOKIE_FILE, CREDENTIALS_FILE, PORT,
+} from "./config.js";
 
 let activeJob = null;
 
-function sseJob(res, req, script) {
+function sseJob(res, req, script, { onDone } = {}) {
   res.writeHead(200, {
     "Content-Type": "text/event-stream",
     "Cache-Control": "no-cache",
@@ -35,7 +20,7 @@ function sseJob(res, req, script) {
     res.write(`data: ${JSON.stringify({ type, text })}\n\n`);
 
   const child = spawn("node", [script], {
-    cwd: __dirname,
+    cwd: import.meta.dirname,
     env: { ...process.env, FORCE_COLOR: "0" },
   });
 
@@ -43,11 +28,12 @@ function sseJob(res, req, script) {
   child.stderr.on("data", (chunk) => send("log", chunk.toString()));
 
   child.on("close", (code) => {
-    send(
-      code === 0 ? "done" : "error",
-      code === 0 ? "Готово." : `Процесът завърши с код ${code}`,
-    );
-    res.end();
+    if (code === 0 && onDone) {
+      onDone(send);
+    } else if (code !== 0) {
+      send("error", `Процесът завърши с код ${code}`);
+      res.end();
+    }
   });
 
   req.on("close", () => child.kill());
@@ -55,15 +41,26 @@ function sseJob(res, req, script) {
   return child;
 }
 
+function guardedSseJob(name, res, req, script, opts = {}) {
+  if (activeJob) {
+    return res.status(409).json({ error: `Вече работи: ${activeJob}` });
+  }
+  activeJob = name;
+  const child = sseJob(res, req, script, opts);
+  const cleanup = () => { activeJob = null; };
+  child.on("close", cleanup);
+  req.on("close", cleanup);
+  return child;
+}
+
+// --- Express app ---
+
 const app = express();
 app.use(express.json());
 
-// --- API routes ---
-
-app.get("/data/order-details.json", (req, res) => {
-  if (!existsSync(DATA_FILE)) return res.sendStatus(404);
-  res.setHeader("Content-Type", "application/json");
-  createReadStream(DATA_FILE).pipe(res);
+app.get("/api/data", (req, res) => {
+  if (!hasData()) return res.sendStatus(404);
+  res.json(getDashboardData());
 });
 
 app.get("/api/status", (req, res) => {
@@ -73,9 +70,11 @@ app.get("/api/status", (req, res) => {
   if (hasCredentials) {
     try {
       email = JSON.parse(readFileSync(CREDENTIALS_FILE, "utf-8")).email;
-    } catch {}
+    } catch (err) {
+      console.warn("Failed to parse credentials:", err.message);
+    }
   }
-  res.json({ hasCredentials, hasCookies, email });
+  res.json({ hasCredentials, hasCookies, email, hasData: hasData() });
 });
 
 app.post("/api/credentials", (req, res) => {
@@ -92,27 +91,26 @@ app.post("/api/credentials", (req, res) => {
 });
 
 app.get("/api/login", (req, res) => {
-  if (activeJob) {
-    return res
-      .status(409)
-      .json({ error: `Вече работи: ${activeJob}` });
-  }
-  activeJob = "login";
-  const child = sseJob(res, req, "auth.js");
-  child.on("close", () => (activeJob = null));
-  req.on("close", () => (activeJob = null));
+  guardedSseJob("login", res, req, "auth.js");
 });
 
 app.get("/api/scrape", (req, res) => {
-  if (activeJob) {
-    return res
-      .status(409)
-      .json({ error: `Вече работи: ${activeJob}` });
-  }
-  activeJob = "scrape";
-  const child = sseJob(res, req, "fetch-orders.js");
-  child.on("close", () => (activeJob = null));
-  req.on("close", () => (activeJob = null));
+  guardedSseJob("scrape", res, req, "fetch-orders.js", {
+    onDone(send) {
+      send("log", "\nИмпортиране в базата данни...\n");
+      try {
+        const result = importFromJson(DATA_FILE);
+        send(
+          "done",
+          `Готово: ${result.orderCount} поръчки, ${result.productCount} продукта, ${result.itemCount} артикула.`,
+        );
+      } catch (err) {
+        send("error", `Грешка при импортиране: ${err.message}`);
+      }
+      activeJob = null;
+      res.end();
+    },
+  });
 });
 
 // --- Static files (production only) ---
@@ -120,17 +118,21 @@ app.get("/api/scrape", (req, res) => {
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(DIST_DIR));
 
-  // SPA fallback
   app.get("/{*splat}", (req, res) => {
-    res.sendFile(resolve(DIST_DIR, "index.html"));
+    res.sendFile("index.html", { root: DIST_DIR });
   });
 }
 
 app.listen(PORT, () => {
   const mode = process.env.NODE_ENV === "production" ? "production" : "dev";
-  const data = process.env.USE_SEED
-    ? "seed (order-details.dev.json)"
-    : "prod (order-details.json)";
   console.log(`vibEbag server (${mode}) listening on port ${PORT}`);
-  console.log(`  Data: ${data}`);
+
+  // Auto-import if DB is empty but JSON backup exists
+  if (!hasData() && existsSync(DATA_FILE)) {
+    console.log("Празна база данни — импортиране от order-details.json...");
+    const result = importFromJson(DATA_FILE);
+    console.log(
+      `Импортирани: ${result.orderCount} поръчки, ${result.productCount} продукта, ${result.itemCount} артикула.`,
+    );
+  }
 });

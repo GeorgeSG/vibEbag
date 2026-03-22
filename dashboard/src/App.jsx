@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { processOrders } from "./data/processOrders";
+
 import { useTheme } from "./hooks/useTheme";
 import Overview from "./pages/Overview";
 import Products from "./pages/Products";
@@ -148,7 +148,7 @@ export default function App() {
   const loadData = useCallback(() => {
     setLoadError(null);
     setNoData(false);
-    fetch("/data/order-details.json")
+    fetch("/api/data")
       .then((r) => {
         if (r.status === 404) {
           setNoData(true);
@@ -157,8 +157,8 @@ export default function App() {
         if (!r.ok) throw new Error(`Грешка при зареждане на данните (${r.status})`);
         return r.json();
       })
-      .then((raw) => {
-        if (raw) setData(processOrders(raw));
+      .then((result) => {
+        if (result) setData(result);
       })
       .catch((err) => setLoadError(err.message));
   }, []);
@@ -171,7 +171,8 @@ export default function App() {
       })
       .then((s) => {
         setStatus(s);
-        if (thenLoadData && s.hasCredentials) loadData();
+        if (thenLoadData && s.hasCredentials && s.hasData) loadData();
+        else if (thenLoadData && s.hasCredentials && !s.hasData) setNoData(true);
       })
       .catch((err) => setLoadError(err.message));
   }

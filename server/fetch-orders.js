@@ -1,15 +1,10 @@
 import { readFileSync, writeFileSync, existsSync } from "fs";
-import { resolve, dirname } from "path";
-import { fileURLToPath } from "url";
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const COOKIE_FILE = resolve(__dirname, "../data/cookies.json");
-const DETAILS_FILE = resolve(__dirname, "../data/order-details.json");
+import { COOKIE_FILE, DATA_FILE } from "./config.js";
 
 const ORDERS_API = "https://www.ebag.bg/orders/list/json";
 const BASE_URL = "https://www.ebag.bg/orders";
 const CONCURRENCY = 2;
-const DELAY_MS = [500, 1000]; // random delay range between requests
+const DELAY_MS = [500, 1000];
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const randomDelay = () => sleep(DELAY_MS[0] + Math.random() * (DELAY_MS[1] - DELAY_MS[0]));
@@ -53,7 +48,6 @@ async function checkSession(cookieHeader) {
     process.exit(1);
   }
 
-  // Return the first page so fetchAllOrders can reuse it instead of re-fetching
   return data;
 }
 
@@ -121,7 +115,7 @@ async function main() {
   const orders = await fetchAllOrders(cookieHeader, firstPage);
 
   // Load existing details and skip already-fetched orders
-  const existing = existsSync(DETAILS_FILE) ? JSON.parse(readFileSync(DETAILS_FILE, "utf-8")) : [];
+  const existing = existsSync(DATA_FILE) ? JSON.parse(readFileSync(DATA_FILE, "utf-8")) : [];
   const existingIds = new Set(existing.map((d) => d.encrypted_id));
   const toFetch = orders.filter((o) => !existingIds.has(o.encrypted_id));
 
@@ -146,7 +140,7 @@ async function main() {
   console.log("\nГотово.");
 
   const allDetails = [...existing, ...newDetails];
-  writeFileSync(DETAILS_FILE, JSON.stringify(allDetails, null, 2));
+  writeFileSync(DATA_FILE, JSON.stringify(allDetails, null, 2));
   console.log(`Запазени ${allDetails.length} поръчки.`);
 }
 

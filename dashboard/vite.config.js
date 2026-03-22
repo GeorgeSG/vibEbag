@@ -13,7 +13,6 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": "http://localhost:3001",
-      "/data/order-details.json": "http://localhost:3001",
     },
   },
 });
