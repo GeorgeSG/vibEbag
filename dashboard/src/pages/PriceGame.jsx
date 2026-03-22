@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Crosshair, ArrowRight, RotateCcw, Flame, Tag, Delete, Trophy } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -257,7 +257,7 @@ export default function PriceGame({ productList }) {
     setPhase("revealed");
   }
 
-  function handleNext() {
+  const handleNext = useCallback(() => {
     if (roundIndex + 1 >= totalRounds) {
       const finalScore = results.reduce((s, r) => s + r.points, 0);
       const newBoard = saveToLeaderboard(finalScore);
@@ -269,7 +269,7 @@ export default function PriceGame({ productList }) {
       setGuess("");
       setPhase("guessing");
     }
-  }
+  }, [roundIndex, totalRounds, results]);
 
   useEffect(() => {
     if (phase === "guessing" && inputRef.current) {
@@ -291,7 +291,7 @@ export default function PriceGame({ productList }) {
         cleanup?.();
       };
     }
-  }, [roundIndex, phase]);
+  }, [roundIndex, phase, handleNext]);
 
   if (productList.length === 0) {
     return (
@@ -313,15 +313,8 @@ export default function PriceGame({ productList }) {
             {/* Product image grid */}
             <div className="mx-auto mb-6 grid w-fit grid-cols-3 gap-2">
               {heroProducts.map((p) => (
-                <div
-                  key={p.id}
-                  className="size-20 overflow-hidden rounded-xl border bg-white p-2"
-                >
-                  <img
-                    src={productImg(p.id)}
-                    alt=""
-                    className="size-full object-contain"
-                  />
+                <div key={p.id} className="size-20 overflow-hidden rounded-xl border bg-white p-2">
+                  <img src={productImg(p.id)} alt="" className="size-full object-contain" />
                 </div>
               ))}
             </div>
