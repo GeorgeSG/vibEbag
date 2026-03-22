@@ -35,17 +35,17 @@ async function checkSession(cookieHeader) {
 
   if (res.status >= 300 && res.status < 400) {
     console.error("Сесията е изтекла. Първо изпълнете `npm run login`.");
-    process.exit(1);
+    process.exit(2);
   }
   if (!res.ok) {
     console.error(`Проверката на сесията се провали: ${res.status} ${res.statusText}`);
-    process.exit(1);
+    process.exit(2);
   }
 
   const data = await res.json();
   if (!Array.isArray(data.results)) {
     console.error("Сесията е изтекла или неочакван отговор. Първо изпълнете `npm run login`.");
-    process.exit(1);
+    process.exit(2);
   }
 
   return data;

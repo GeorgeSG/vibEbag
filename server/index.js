@@ -27,7 +27,10 @@ function sseJob(res, req, script, { onDone } = {}) {
   child.on("close", (code) => {
     if (code === 0 && onDone) {
       onDone(send);
-    } else if (code !== 0) {
+    } else if (code === 0) {
+      send("done", "Готово.");
+      res.end();
+    } else {
       send("error", `Процесът завърши с код ${code}`);
       res.end();
     }
@@ -127,23 +130,81 @@ app.get("/api/login", (req, res) => {
   guardedSseJob("login", res, req, "auth.js");
 });
 
-app.get("/api/scrape", (req, res) => {
-  guardedSseJob("scrape", res, req, "fetch-orders.js", {
-    onDone(send) {
-      send("log", "\nИмпортиране в базата данни...\n");
-      try {
-        const result = importFromJson(DATA_FILE);
-        send(
-          "done",
-          `Готово: ${result.orderCount} поръчки, ${result.productCount} продукта, ${result.itemCount} артикула.`,
-        );
-      } catch (err) {
-        send("error", `Грешка при импортиране: ${err.message}`);
-      }
+function runScript(script, send, req) {
+  return new Promise((resolve) => {
+    const child = spawn("node", [script], {
+      cwd: import.meta.dirname,
+      env: { ...process.env, FORCE_COLOR: "0" },
+    });
+    child.stdout.on("data", (chunk) => send("log", chunk.toString()));
+    child.stderr.on("data", (chunk) => send("log", chunk.toString()));
+    child.on("close", (code) => resolve(code));
+    req.on("close", () => child.kill());
+  });
+}
+
+app.get("/api/scrape", async (req, res) => {
+  if (activeJob) {
+    return res.status(409).json({ error: `Вече работи: ${activeJob}` });
+  }
+  activeJob = "scrape";
+
+  res.writeHead(200, {
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache",
+    Connection: "keep-alive",
+  });
+  const send = (type, text) => res.write(`data: ${JSON.stringify({ type, text })}\n\n`);
+
+  let aborted = false;
+  req.on("close", () => {
+    aborted = true;
+  });
+
+  let code = await runScript("fetch-orders.js", send, req);
+
+  if (code === 2 && !aborted && existsSync(CREDENTIALS_FILE)) {
+    send("log", "\nСесията е изтекла. Влизане отново...\n");
+    const loginCode = await runScript("auth.js", send, req);
+    if (aborted) {
+      activeJob = null;
+      return;
+    }
+    if (loginCode === 0) {
+      send("log", "\nПовторен опит за синхронизиране...\n");
+      code = await runScript("fetch-orders.js", send, req);
+    } else {
+      send("error", "Автоматичното влизане не успя. Проверете данните си за вход.");
       activeJob = null;
       res.end();
-    },
-  });
+      return;
+    }
+  }
+
+  if (aborted) {
+    activeJob = null;
+    return;
+  }
+
+  if (code === 2) {
+    send("session-expired", "Сесията е изтекла.");
+  } else if (code === 0) {
+    send("log", "\nИмпортиране в базата данни...\n");
+    try {
+      const result = importFromJson(DATA_FILE);
+      send(
+        "done",
+        `Готово: ${result.orderCount} поръчки, ${result.productCount} продукта, ${result.itemCount} артикула.`,
+      );
+    } catch (err) {
+      send("error", `Грешка при импортиране: ${err.message}`);
+    }
+  } else {
+    send("error", `Процесът завърши с код ${code}`);
+  }
+
+  activeJob = null;
+  res.end();
 });
 
 // --- Static files (production only) ---

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { RefreshCw, CheckCircle2, AlertCircle, X } from "lucide-react";
+import { RefreshCw, CheckCircle2, AlertCircle, X, LogIn } from "lucide-react";
 
 function parseLines(logs) {
   return logs
@@ -12,7 +12,8 @@ function StatusIcon({ state, size = 13 }) {
   if (state === "running")
     return <RefreshCw size={size} className="animate-spin text-muted-foreground" />;
   if (state === "done") return <CheckCircle2 size={size} className="text-emerald-500" />;
-  if (state === "error") return <AlertCircle size={size} className="text-destructive" />;
+  if (state === "error" || state === "session-expired")
+    return <AlertCircle size={size} className="text-destructive" />;
   return null;
 }
 
@@ -20,7 +21,7 @@ function StatusIcon({ state, size = 13 }) {
  * variant="floating" — fixed bottom-right panel (SyncPanel)
  * variant="inline"   — inline bordered box (LoginForm)
  */
-export function LogViewer({ state, logs, onClose, variant = "floating", labels }) {
+export function LogViewer({ state, logs, onClose, variant = "floating", labels, onRelogin }) {
   const bottomRef = useRef(null);
   const lines = parseLines(logs);
 
@@ -33,7 +34,9 @@ export function LogViewer({ state, logs, onClose, variant = "floating", labels }
       ? (labels?.running ?? "Синхронизира...")
       : state === "done"
         ? (labels?.done ?? "Готово")
-        : (labels?.error ?? "Грешка");
+        : state === "session-expired"
+          ? "Сесията е изтекла"
+          : (labels?.error ?? "Грешка");
 
   if (variant === "inline") {
     return (
@@ -78,6 +81,18 @@ export function LogViewer({ state, logs, onClose, variant = "floating", labels }
         ))}
         <div ref={bottomRef} />
       </div>
+      {onRelogin && (
+        <div className="flex items-center justify-between px-3 py-2 border-t bg-muted/50">
+          <span className="text-xs text-muted-foreground">Сесията е изтекла</span>
+          <button
+            onClick={onRelogin}
+            className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90"
+          >
+            <LogIn size={12} />
+            Влез отново
+          </button>
+        </div>
+      )}
     </div>
   );
 }
