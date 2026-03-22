@@ -29,15 +29,17 @@ export function EBagLink({ type, id, variant = "icon", className = "" }) {
 
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
-        <a
-          href={href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`inline-flex items-center text-muted-foreground hover:text-foreground transition-colors ${className}`}
-        >
-          <ExternalLink size={13} />
-        </a>
+      <TooltipTrigger
+        render={
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`inline-flex items-center text-muted-foreground hover:text-foreground transition-colors ${className}`}
+          />
+        }
+      >
+        <ExternalLink size={13} />
       </TooltipTrigger>
       <TooltipContent>Виж в eBag</TooltipContent>
     </Tooltip>

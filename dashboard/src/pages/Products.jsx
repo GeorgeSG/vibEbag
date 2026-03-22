@@ -240,9 +240,11 @@ function PriceHistory({ product, onNavigateOrder, categories, onCategorized }) {
                       </span>
                       {entry.wasPromo && (
                         <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className="ml-1.5 inline-block size-2 rounded-full bg-emerald-500 cursor-default align-middle" />
-                          </TooltipTrigger>
+                          <TooltipTrigger
+                            render={
+                              <span className="ml-1.5 inline-block size-2 rounded-full bg-emerald-500 cursor-default align-middle" />
+                            }
+                          />
                           <TooltipContent>Промоционална цена</TooltipContent>
                         </Tooltip>
                       )}

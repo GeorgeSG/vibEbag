@@ -493,30 +493,26 @@ export default function App() {
               </nav>
               <div className="ml-auto flex items-center gap-2">
                 <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={startSync}
-                      disabled={syncState === "running"}
-                      className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-40 disabled:pointer-events-none"
-                      aria-label="Синхронизирай данните"
-                    >
-                      <RefreshCw
-                        size={16}
-                        className={syncState === "running" ? "animate-spin" : ""}
-                      />
-                    </button>
+                  <TooltipTrigger
+                    onClick={startSync}
+                    disabled={syncState === "running"}
+                    className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-40 disabled:pointer-events-none"
+                    aria-label="Синхронизирай данните"
+                  >
+                    <RefreshCw
+                      size={16}
+                      className={syncState === "running" ? "animate-spin" : ""}
+                    />
                   </TooltipTrigger>
                   <TooltipContent>Синхронизирай</TooltipContent>
                 </Tooltip>
                 <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={toggle}
-                      className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                      aria-label="Превключи тема"
-                    >
-                      {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
-                    </button>
+                  <TooltipTrigger
+                    onClick={toggle}
+                    className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                    aria-label="Превключи тема"
+                  >
+                    {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
                   </TooltipTrigger>
                   <TooltipContent>{theme === "dark" ? "Светла тема" : "Тъмна тема"}</TooltipContent>
                 </Tooltip>

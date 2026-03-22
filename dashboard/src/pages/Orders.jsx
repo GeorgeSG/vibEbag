@@ -42,7 +42,7 @@ function TruncatedName({ name, className }) {
 
   return (
     <Tooltip>
-      <TooltipTrigger asChild>{span}</TooltipTrigger>
+      <TooltipTrigger render={span} />
       <TooltipContent>{name}</TooltipContent>
     </Tooltip>
   );

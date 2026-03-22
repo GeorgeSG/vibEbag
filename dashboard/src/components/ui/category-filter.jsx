@@ -11,37 +11,35 @@ export function CategoryFilter({ categories, selected, onChange }) {
 
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        <button className="flex h-8 min-w-40 items-center justify-between gap-2 rounded-lg border border-input bg-transparent px-2.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
-          <span className="flex items-center gap-1 overflow-hidden">
-            {selected.length === 0 ? (
-              "Категории"
-            ) : (
-              <>
-                {selected.slice(0, 2).map((c) => (
-                  <Badge
-                    key={c}
-                    variant="outline"
-                    className="text-xs py-0 shrink-0"
-                    style={{
-                      backgroundColor: categoryColor(c) + "22",
-                      color: categoryColor(c),
-                      borderColor: categoryColor(c) + "55",
-                    }}
-                  >
-                    {c}
-                  </Badge>
-                ))}
-                {selected.length > 2 && (
-                  <span className="shrink-0 text-xs text-muted-foreground">
-                    +{selected.length - 2}
-                  </span>
-                )}
-              </>
-            )}
-          </span>
-          <ChevronDown size={14} className="shrink-0" />
-        </button>
+      <PopoverTrigger className="flex h-8 min-w-40 items-center justify-between gap-2 rounded-lg border border-input bg-transparent px-2.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+        <span className="flex items-center gap-1 overflow-hidden">
+          {selected.length === 0 ? (
+            "Категории"
+          ) : (
+            <>
+              {selected.slice(0, 2).map((c) => (
+                <Badge
+                  key={c}
+                  variant="outline"
+                  className="text-xs py-0 shrink-0"
+                  style={{
+                    backgroundColor: categoryColor(c) + "22",
+                    color: categoryColor(c),
+                    borderColor: categoryColor(c) + "55",
+                  }}
+                >
+                  {c}
+                </Badge>
+              ))}
+              {selected.length > 2 && (
+                <span className="shrink-0 text-xs text-muted-foreground">
+                  +{selected.length - 2}
+                </span>
+              )}
+            </>
+          )}
+        </span>
+        <ChevronDown size={14} className="shrink-0" />
       </PopoverTrigger>
       <PopoverContent className="w-64 p-1" align="end">
         <div className="flex items-center justify-between px-2 py-1.5 mb-1">
