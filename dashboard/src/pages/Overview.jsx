@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   CreditCard,
@@ -62,11 +62,28 @@ export default function Overview({ data }) {
     topProducts,
     topByFrequency,
     topOrders,
-    inflationProducts,
+    productList,
     promoDependency,
     topBrands,
     loyaltyProducts,
   } = data;
+  const inflationProducts = useMemo(() => {
+    return productList
+      .map((p) => {
+        const nonPromo = p.priceHistory.filter((e) => !e.wasPromo);
+        if (nonPromo.length < 2) return null;
+        const prices = nonPromo.map((e) => e.unitPrice);
+        const minPrice = Math.min(...prices);
+        const latest = prices[prices.length - 1];
+        if (minPrice <= 0 || latest <= minPrice) return null;
+        const pctIncrease = +(((latest - minPrice) / minPrice) * 100).toFixed(1);
+        return { id: p.id, name: p.name, category: p.category, minPrice, latest, pctIncrease };
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.pctIncrease - a.pctIncrease)
+      .slice(0, 10);
+  }, [productList]);
+
   const topList = topMode === "spend" ? topProducts : topByFrequency;
 
   const spendConfig = { spend: { label: "Разход", color: "var(--brand)" } };
@@ -395,7 +412,7 @@ export default function Overview({ data }) {
         </CardHeader>
         <CardContent>
           {inflationProducts.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Няма поскъпнали продукти</p>
+            <p className="text-sm text-muted-foreground">Няма поскъпнали продукти за този период</p>
           ) : (
             <ul className="grid grid-cols-2 divide-y divide-border gap-x-8">
               {inflationProducts.map((p) => (
@@ -425,7 +442,7 @@ export default function Overview({ data }) {
                       <div className="mt-1 flex items-center gap-2">
                         <CategoryBadge category={p.category} />
                         <span className="text-xs text-muted-foreground tabular-nums">
-                          {fmt(p.prevMax)} € → {fmt(p.latest)} €
+                          {fmt(p.minPrice)} € → {fmt(p.latest)} €
                         </span>
                       </div>
                     </div>

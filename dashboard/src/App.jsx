@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { processOrders } from "./data/processOrders";
 import { useTheme } from "./hooks/useTheme";
 import Overview from "./pages/Overview";
@@ -319,21 +319,31 @@ export default function App() {
                 </NavLink>
               </nav>
               <div className="ml-auto flex items-center gap-2">
-                <button
-                  onClick={startSync}
-                  disabled={syncState === "running"}
-                  className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-40 disabled:pointer-events-none"
-                  aria-label="Синхронизирай данните"
-                >
-                  <RefreshCw size={16} className={syncState === "running" ? "animate-spin" : ""} />
-                </button>
-                <button
-                  onClick={toggle}
-                  className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                  aria-label="Превключи тема"
-                >
-                  {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
-                </button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={startSync}
+                      disabled={syncState === "running"}
+                      className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-40 disabled:pointer-events-none"
+                      aria-label="Синхронизирай данните"
+                    >
+                      <RefreshCw size={16} className={syncState === "running" ? "animate-spin" : ""} />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>Синхронизирай</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={toggle}
+                      className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                      aria-label="Превключи тема"
+                    >
+                      {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>{theme === "dark" ? "Светла тема" : "Тъмна тема"}</TooltipContent>
+                </Tooltip>
               </div>
             </div>
           </header>

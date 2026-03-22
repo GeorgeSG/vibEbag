@@ -226,25 +226,6 @@ export function processOrders(details) {
   // --- Top 5 orders by total ---
   const topOrders = [...orderList].sort((a, b) => b.total - a.total).slice(0, 5);
 
-  // --- Inflation products: at all-time high price ---
-  const inflationProducts = productList
-    .filter((p) => {
-      if (p.priceHistory.length < 2) return false;
-      const prices = p.priceHistory.map((e) => e.unitPrice);
-      const latest = prices[prices.length - 1];
-      const prevMax = Math.max(...prices.slice(0, -1));
-      return latest > prevMax;
-    })
-    .map((p) => {
-      const prices = p.priceHistory.map((e) => e.unitPrice);
-      const latest = prices[prices.length - 1];
-      const prevMax = Math.max(...prices.slice(0, -1));
-      const pctIncrease = +(((latest - prevMax) / prevMax) * 100).toFixed(1);
-      return { id: p.id, name: p.name, category: p.category, prevMax, latest, pctIncrease };
-    })
-    .sort((a, b) => b.pctIncrease - a.pctIncrease)
-    .slice(0, 10);
-
   // --- Promo dependency per category ---
   const promoCatMap = {};
   allItems.forEach((item) => {
@@ -319,7 +300,6 @@ export function processOrders(details) {
     productList,
     orderList,
     topOrders,
-    inflationProducts,
     promoDependency,
     topBrands,
     loyaltyProducts,
