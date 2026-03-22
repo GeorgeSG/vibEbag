@@ -144,7 +144,7 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   const mode = process.env.NODE_ENV === "production" ? "production" : "dev";
   console.log(`vibEbag server (${mode}) listening on port ${PORT}`);
 

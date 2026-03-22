@@ -61,7 +61,4 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_products_category ON products(category_id);
 `);
 
-// Graceful shutdown — ensures WAL checkpoint
-process.on("exit", () => { db.close(); });
-
 export default db;
