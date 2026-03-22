@@ -5,6 +5,7 @@ WORKDIR /build/dashboard
 COPY dashboard/package.json dashboard/package-lock.json ./
 RUN npm ci
 COPY dashboard/ .
+COPY package.json /build/package.json
 RUN npm run build
 
 
@@ -38,8 +39,9 @@ WORKDIR /app
 
 # Server with Linux-built node_modules
 COPY --from=server-deps /build/server/node_modules ./server/node_modules
-COPY server/index.js server/db.js server/queries.js server/import.js \
-     server/auth.js server/fetch-orders.js server/package.json ./server/
+COPY server/index.js server/config.js server/utils.js server/db.js \
+     server/queries.js server/import.js server/auth.js server/fetch-orders.js \
+     server/package.json ./server/
 
 # Install Playwright Chromium browser binary
 RUN cd server && npx playwright install chromium
