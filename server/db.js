@@ -62,7 +62,6 @@ db.exec(`
 `);
 
 // Graceful shutdown — ensures WAL checkpoint
-process.on("SIGINT", () => { db.close(); process.exit(0); });
-process.on("SIGTERM", () => { db.close(); process.exit(0); });
+process.on("exit", () => { db.close(); });
 
 export default db;
