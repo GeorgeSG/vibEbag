@@ -1,39 +1,51 @@
 # vibEbag — Agent Guide
 
 ## Project overview
-A personal grocery analytics dashboard built from eBag order export data. The stack is React 19 + Vite + Tailwind CSS v4 + shadcn/ui (base-ui variant) + Recharts. All source lives in `dashboard/src/`. The scraper lives in `scraper/`.
+A personal grocery analytics dashboard built from eBag order export data. The stack is React 19 + Vite + Tailwind CSS v4 + shadcn/ui (base-ui variant) + Recharts. The frontend lives in `dashboard/src/`. The backend (Express server + scraper scripts) lives in `server/`.
 
 ## Architecture
 
 ### Data flow
-- The Vite plugin (`dashboard/scraper-plugin.js`) serves `data/order-details.json` (or `data/order-details.dev.json` when `VITE_USE_SEED=true`) directly to the browser — no manual file copying needed
-- Processing: `dashboard/src/data/processOrders.js` — single function that transforms raw orders into all dashboard-ready structures
+- The Express server (`server/index.js`) fetches orders from eBag's API, imports them into a SQLite database (`data/vibebag.db`), and serves aggregated data via `/api/data`
+- Server-side aggregation: `server/queries.js` — SQL queries that produce all dashboard-ready structures
+- Client-side processing: `dashboard/src/data/processOrders.js` — transforms raw JSON into chart/table data (used alongside server queries)
 - Pages receive pre-computed data as props from `App.jsx`
 - `App.jsx` also handles login form, sync button, status checking, and error states
+- Vite dev server proxies `/api/*` to the Express server (port 3001)
 
 ### Pages
 - `Overview.jsx` — KPI tiles + charts, max-w-6xl
 - `Products.jsx` — sortable/filterable product table with sheet detail, max-w-screen-2xl
 - `Orders.jsx` — sortable orders table with sheet detail, max-w-6xl
+- `PriceGame.jsx` — price guessing game with scoring, streaks, and persistent leaderboard
+- `Categorizer.jsx` — review and assign categories to uncategorized products
 
-### Scraper (`scraper/`)
+### Server (`server/`)
 | File | Purpose |
 |---|---|
+| `index.js` | Express app — API endpoints, SSE login/scrape streams, static file serving in production |
+| `db.js` | better-sqlite3 setup with schema, WAL mode |
+| `queries.js` | Dashboard data aggregators (KPIs, charts, lists) — all SQL-based |
+| `import.js` | `importFromJson()` — upserts orders/products/items from JSON into SQLite |
+| `config.js` | Environment & constants (paths, port, BGN_TO_EUR conversion rate) |
+| `utils.js` | `num()`, `toEur()`, `formatTimeSlot()` helpers |
 | `auth.js` | Playwright headless login — reads credentials from `data/credentials.json`, saves session cookies to `data/cookies.json` |
-| `fetch-orders.js` | Fetches paginated order list + full line-item details in one run. Incremental: skips already-fetched orders. Rate-limited: concurrency 2, 500–1000 ms random delay |
+| `fetch-orders.js` | Fetches paginated order list + full line-item details. Incremental: skips already-fetched orders. Rate-limited: concurrency 2, 500–1000 ms random delay. Exits with code 2 on session expiry. |
 | `seed.js` | Generates synthetic dev data (`data/order-details.dev.json`) using `@faker-js/faker` with realistic Bulgarian brands and categories |
 
-### Vite plugin (`dashboard/scraper-plugin.js`)
-Exposes API endpoints on the Vite dev server:
+### API endpoints (`server/index.js`)
 | Endpoint | Method | Purpose |
 |---|---|---|
-| `/data/order-details.json` | GET | Serves the data file from `../data/` |
-| `/api/status` | GET | Returns `{ hasCredentials, hasCookies, email }` |
+| `/api/data` | GET | Returns aggregated dashboard data from SQLite |
+| `/api/status` | GET | Returns `{ hasCredentials, hasCookies, email, hasData }` |
 | `/api/credentials` | POST | Saves `{ email, password }` to `data/credentials.json` |
+| `/api/cookies` | POST | Saves `{ sessionid }` as cookie to `data/cookies.json` |
 | `/api/login` | GET | SSE stream — runs `auth.js` |
-| `/api/scrape` | GET | SSE stream — runs `fetch-orders.js` |
+| `/api/scrape` | GET | SSE stream — runs `fetch-orders.js`, auto re-logins on session expiry if credentials exist, then imports to DB |
+| `/api/uncategorized` | GET | Returns products without a category |
+| `/api/categorize` | POST | Updates a product's category in the DB |
 
-Login and scrape endpoints use Server-Sent Events (SSE) to stream stdout/stderr from the child process. Messages are `{ type: "log"|"done"|"error", text }`. Only one job can run at a time (`activeJob` guard).
+Login and scrape endpoints use Server-Sent Events (SSE) to stream stdout/stderr from child processes. Messages are `{ type: "log"|"done"|"error"|"session-expired", text }`. Only one job can run at a time (`activeJob` guard).
 
 ### Shared components (`dashboard/src/components/ui/`)
 | File | Purpose |
@@ -90,11 +102,12 @@ Add all transformations to `processOrders.js` and include in the return object. 
 - `App.jsx` wraps all routes in an `ErrorBoundary` class component — catches render errors and shows a Bulgarian error message with a reload button
 - `loadData()` and `fetchStatus()` both have `.catch()` handlers that set a `loadError` state, shown as an inline error with a retry button
 - EventSource streams (login/sync) have a 5-minute timeout that auto-closes the connection and shows "Времето за изчакване изтече."
+- Session expiry: `fetch-orders.js` exits with code 2 on 403/redirect. The server auto re-logins if credentials exist, or sends `session-expired` SSE type. The client shows a "Влез отново" button for cookie-only users.
 
 ### Dev vs prod data
-- `npm run dev` — serves `data/order-details.json` (real data)
-- `npm run dev:seeded` — sets `VITE_USE_SEED=true`, serves `data/order-details.dev.json` (synthetic data)
-- `npm run seed` (in `scraper/`) — regenerates the synthetic data file
+- `npm run dev` — starts Express server + Vite dev server, uses real data from SQLite
+- `npm run dev:seeded` — sets `USE_SEED=true` / `VITE_USE_SEED=true`, uses synthetic data
+- `npm run seed` — regenerates the synthetic data file
 
 ## eBag API reference
 
