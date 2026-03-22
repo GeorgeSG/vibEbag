@@ -439,7 +439,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <TooltipProvider>
-        <div className="min-h-screen bg-background">
+        <div className="flex min-h-screen flex-col bg-background">
           <header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur">
             <div className="mx-auto flex max-w-6xl items-center gap-6 px-6 py-4">
               <NavLink
@@ -513,45 +513,47 @@ export default function App() {
             </div>
           </header>
 
-          {loadError ? (
-            <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 px-6 text-center">
-              <AlertCircle size={32} className="text-destructive" />
-              <p className="text-sm text-muted-foreground">{loadError}</p>
-              <button
-                onClick={() => loadData()}
-                className="mt-1 rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground hover:bg-primary/90"
-              >
-                Опитай отново
-              </button>
-            </div>
-          ) : noData ? (
-            <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-6 text-center">
-              <Download size={40} className="text-muted-foreground" />
-              <h2 className="text-lg font-semibold">Няма заредени данни</h2>
-              <p className="max-w-sm text-sm text-muted-foreground">
-                Натисни бутона по-долу, за да изтеглиш поръчките си от eBag.
-              </p>
-              <Button onClick={startSync} disabled={syncState === "running"}>
-                {syncState === "running" ? (
-                  <>
-                    <RefreshCw size={14} className="animate-spin" /> Синхронизиране...
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw size={14} /> Синхронизирай
-                  </>
-                )}
-              </Button>
-            </div>
-          ) : data ? (
-            <ErrorBoundary>
-              <AnimatedRoutes data={data} onReload={loadData} />
-            </ErrorBoundary>
-          ) : (
-            <div className="flex min-h-screen items-center justify-center">
-              <p className="text-muted-foreground">Зарежда...</p>
-            </div>
-          )}
+          <main className="flex-1">
+            {loadError ? (
+              <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 px-6 text-center">
+                <AlertCircle size={32} className="text-destructive" />
+                <p className="text-sm text-muted-foreground">{loadError}</p>
+                <button
+                  onClick={() => loadData()}
+                  className="mt-1 rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground hover:bg-primary/90"
+                >
+                  Опитай отново
+                </button>
+              </div>
+            ) : noData ? (
+              <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-6 text-center">
+                <Download size={40} className="text-muted-foreground" />
+                <h2 className="text-lg font-semibold">Няма заредени данни</h2>
+                <p className="max-w-sm text-sm text-muted-foreground">
+                  Натисни бутона по-долу, за да изтеглиш поръчките си от eBag.
+                </p>
+                <Button onClick={startSync} disabled={syncState === "running"}>
+                  {syncState === "running" ? (
+                    <>
+                      <RefreshCw size={14} className="animate-spin" /> Синхронизиране...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw size={14} /> Синхронизирай
+                    </>
+                  )}
+                </Button>
+              </div>
+            ) : data ? (
+              <ErrorBoundary>
+                <AnimatedRoutes data={data} onReload={loadData} />
+              </ErrorBoundary>
+            ) : (
+              <div className="flex min-h-screen items-center justify-center">
+                <p className="text-muted-foreground">Зарежда...</p>
+              </div>
+            )}
+          </main>
 
           <footer className="border-t py-6 text-center text-xs text-muted-foreground/60">
             <span className="inline-flex items-center gap-1.5">
