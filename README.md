@@ -21,14 +21,17 @@ Some code has been read by humans.
 
 ## Features
 
-- 📊 **Overview dashboard** — KPI tiles, monthly spend area chart, category donut, top products & brands
-- 🛍️ **Orders page** — sortable, paginated order list with a detail sheet per order
-- 🥦 **Products page** — sortable/filterable product table with price history chart and purchase detail
+- 📊 **Overview dashboard** — KPI tiles (total spend, orders, average basket, savings, tips), monthly spend area chart, category donut, top products & brands by spend or frequency, orders by day-of-week and time slot, top 5 orders, price increase alerts, promo dependency by category, and product loyalty scores
+- 🛍️ **Orders page** — sortable, paginated order list with a detail sheet per order showing item breakdown, category badges, and direct links to eBag
+- 🥦 **Products page** — sortable/filterable product table with price history chart, purchase detail, and category filtering
   - 📈 **Inflation tracker** — for every unique product, see how its unit price has changed across purchases over time
-- 🎯 **Реалитест** — price guessing game: see a product you bought and try to guess the price, with scoring, streaks, and persistent high scores
-- 🤖 **UI-driven scraping** — login and sync triggered from the browser, with real-time streaming progress
+- 🏷️ **Categorizer** — review and assign categories to uncategorized products with a swipe-style card UI
+- 🎯 **Реалитест** — price guessing game: see a product you bought and try to guess the price, with scoring, streaks, and a persistent leaderboard
+- 🤖 **UI-driven scraping** — login and sync triggered from the browser, with real-time SSE streaming progress
 - 🔐 **Headless Playwright login** — automated session management, credentials stored locally
 - ⚡ **Incremental fetching** — only new orders are fetched on re-sync
+- 💾 **SQLite storage** — orders are imported into a local SQLite database for fast server-side aggregation
+- 🐳 **Docker support** — multi-arch Docker image published to GHCR, with docker-compose for both dev and production
 - 🌱 **Synthetic seed data** — faker-generated dev dataset with realistic Bulgarian brands and categories
 - 🌙 **Dark mode** — persistent light/dark theme toggle
 - 🇧🇬 **Bulgarian UI** — all labels, dates, and formatting in Bulgarian
