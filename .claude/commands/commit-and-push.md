@@ -29,7 +29,7 @@ Run each step independently — do NOT run them in parallel. A failing step must
 
 3. Create each commit separately by staging the relevant files for each group. Use `git add <specific files>` — never `git add -A` or `git add .`.
 
-4. Show a summary of all commits to be created and ask for confirmation before creating them. If the user requests changes, allow them to modify the commit groups or messages.
+4. Show a summary of all commits to be created and ask for confirmation before creating them. If changes are requested, modify the commits accordingly and repeat until confirmed.
 
 4. After all commits are created, run `git push`.
 
