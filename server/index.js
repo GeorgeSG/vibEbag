@@ -192,10 +192,9 @@ app.get("/api/scrape", async (req, res) => {
     send("log", "\nИмпортиране в базата данни...\n");
     try {
       const result = importFromJson(DATA_FILE);
-      send(
-        "done",
-        `Готово: ${result.orderCount} поръчки, ${result.productCount} продукта, ${result.itemCount} артикула.`,
-      );
+      const msg = `Готово: ${result.orderCount} поръчки, ${result.productCount} продукта, ${result.itemCount} артикула.`;
+      send("log", msg + "\n");
+      send("done", msg);
     } catch (err) {
       send("error", `Грешка при импортиране: ${err.message}`);
     }
