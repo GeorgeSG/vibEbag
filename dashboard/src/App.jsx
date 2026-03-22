@@ -304,13 +304,19 @@ export default function App() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ sessionid }),
     })
-      .then((r) => {
-        if (!r.ok) throw new Error("Failed to save cookie");
+      .then(async (r) => {
+        if (!r.ok) {
+          const body = await r.text().catch(() => "");
+          const detail = `${r.status} ${r.statusText}: ${body}`;
+          console.error("Cookie save failed:", detail);
+          throw new Error(detail);
+        }
         setLoginLogs((prev) => prev + "Готово.\n");
         setLoginState("done");
         fetchStatus(true);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error("Cookie save error:", err);
         setLoginLogs((prev) => prev + "Грешка при запазване на бисквитката.\n");
         setLoginState("error");
       });
