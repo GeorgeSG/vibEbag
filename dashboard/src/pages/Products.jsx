@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { ShoppingCart, TrendingUp, CreditCard, BarChart2 } from "lucide-react";
 import { CategoryFilter } from "@/components/ui/category-filter";
-import { CategoryBadge } from "@/components/ui/category-badge";
+import { EditableCategoryBadge } from "@/components/ui/editable-category-badge";
 import { EBagLink } from "@/components/ui/ebag-link";
 import { StatTile } from "@/components/ui/stat-tile";
 import { SortIcon, SortHead } from "@/components/ui/sort-icon";
@@ -32,7 +32,7 @@ const priceChartConfig = {
   unitPrice: { label: "Цена", color: "var(--chart-1)" },
 };
 
-function PriceHistory({ product, onNavigateOrder }) {
+function PriceHistory({ product, onNavigateOrder, categories, onCategorized }) {
   const [dateDir, setDateDir] = useState("desc");
   const data = product.priceHistory;
   const prices = data.map((d) => d.unitPrice);
@@ -63,7 +63,12 @@ function PriceHistory({ product, onNavigateOrder }) {
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0 mt-0.5">
-            <CategoryBadge category={product.category} />
+            <EditableCategoryBadge
+              category={product.category}
+              productId={product.id}
+              categories={categories}
+              onCategorized={onCategorized}
+            />
             <EBagLink type="product" id={product.id} variant="button" />
           </div>
         </div>
@@ -256,7 +261,7 @@ function PriceHistory({ product, onNavigateOrder }) {
   );
 }
 
-export default function Products({ productList }) {
+export default function Products({ productList, onReload }) {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState("");
@@ -264,7 +269,7 @@ export default function Products({ productList }) {
 
   const selectedId = searchParams.get("id");
   const selected = useMemo(
-    () => (selectedId ? productList.find((p) => String(p.id) === selectedId) ?? null : null),
+    () => (selectedId ? (productList.find((p) => String(p.id) === selectedId) ?? null) : null),
     [selectedId, productList],
   );
   const setSelected = useCallback(
@@ -280,7 +285,7 @@ export default function Products({ productList }) {
   const { sortKey, sortDir, page, pageSize, setPage, handleSort, handlePageSize } =
     useTableState("count");
 
-  const categories = useMemo(
+  const allCategories = useMemo(
     () => [...new Set(productList.map((p) => p.category))].sort(),
     [productList],
   );
@@ -319,6 +324,8 @@ export default function Products({ productList }) {
             <PriceHistory
               product={selected}
               onNavigateOrder={(orderId) => navigate(`/orders?id=${orderId}`)}
+              categories={allCategories}
+              onCategorized={onReload}
             />
           )}
         </SheetContent>
@@ -337,7 +344,7 @@ export default function Products({ productList }) {
               className="max-w-64"
             />
             <CategoryFilter
-              categories={categories}
+              categories={allCategories}
               selected={categoryFilter}
               onChange={handleCategoryFilter}
             />
@@ -409,15 +416,23 @@ export default function Products({ productList }) {
                           />
                         )}
                         <div>
-                          <p className="font-medium" title={p.name.length > 50 ? p.name : undefined}>
+                          <p
+                            className="font-medium"
+                            title={p.name.length > 50 ? p.name : undefined}
+                          >
                             {truncate(p.name, 50)}
                           </p>
                           {p.brand && <p className="text-xs text-muted-foreground">{p.brand}</p>}
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <CategoryBadge category={p.category} />
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      <EditableCategoryBadge
+                        category={p.category}
+                        productId={p.id}
+                        categories={allCategories}
+                        onCategorized={onReload}
+                      />
                     </TableCell>
                     <TableCell className="text-right tabular-nums">{p.count}</TableCell>
                     <TableCell className="text-right tabular-nums">{fmt(p.totalSpend)} €</TableCell>

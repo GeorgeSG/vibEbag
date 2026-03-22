@@ -28,9 +28,7 @@ const upsertCategory = db.prepare(`
   ON CONFLICT(name) DO NOTHING
 `);
 
-const getCategoryId = db.prepare(
-  `SELECT id FROM categories WHERE name = ?`,
-);
+const getCategoryId = db.prepare(`SELECT id FROM categories WHERE name = ?`);
 
 const upsertProduct = db.prepare(`
   INSERT INTO products (id, name_bg, name_en, brand, category_id, unit_type, unit_weight)
@@ -44,9 +42,7 @@ const upsertProduct = db.prepare(`
     unit_weight = excluded.unit_weight
 `);
 
-const deleteOrderItems = db.prepare(
-  `DELETE FROM order_items WHERE order_encrypted_id = ?`,
-);
+const deleteOrderItems = db.prepare(`DELETE FROM order_items WHERE order_encrypted_id = ?`);
 
 const insertItem = db.prepare(`
   INSERT INTO order_items (order_encrypted_id, product_id, quantity,

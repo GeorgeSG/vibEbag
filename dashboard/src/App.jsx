@@ -1,6 +1,18 @@
 import { Component, useCallback, useEffect, useState } from "react";
 import { BrowserRouter, NavLink, Route, Routes, useLocation } from "react-router-dom";
-import { Moon, Sun, Heart, Bot, RefreshCw, AlertCircle, LogIn, Crosshair, Download, Cookie } from "lucide-react";
+import {
+  Moon,
+  Sun,
+  Heart,
+  Bot,
+  RefreshCw,
+  AlertCircle,
+  LogIn,
+  Crosshair,
+  Download,
+  Cookie,
+  Tag,
+} from "lucide-react";
 import { LogViewer } from "@/components/ui/log-viewer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,18 +25,23 @@ import Overview from "./pages/Overview";
 import Products from "./pages/Products";
 import Orders from "./pages/Orders";
 import PriceGame from "./pages/PriceGame";
+import Categorizer from "./pages/Categorizer";
 
 // --- AnimatedRoutes ---
 
-function AnimatedRoutes({ data }) {
+function AnimatedRoutes({ data, onReload }) {
   const location = useLocation();
   return (
     <div key={location.pathname} className="animate-fade-in">
       <Routes location={location}>
         <Route path="/" element={<Overview data={data} />} />
-        <Route path="/products" element={<Products productList={data.productList} />} />
+        <Route
+          path="/products"
+          element={<Products productList={data.productList} onReload={onReload} />}
+        />
         <Route path="/orders" element={<Orders orderList={data.orderList} />} />
         <Route path="/realitest" element={<PriceGame productList={data.productList} />} />
+        <Route path="/categorizer" element={<Categorizer />} />
       </Routes>
     </div>
   );
@@ -120,7 +137,8 @@ function LoginForm({ onLoginWithCredentials, onLoginWithCookie, state, logs }) {
           {mode === "credentials" ? (
             <form onSubmit={handleCredentialsSubmit} className="space-y-3">
               <p className="text-xs text-muted-foreground">
-                Работи само с eBag акаунт. Ако влизаш с Google, Apple или Facebook, използвай Session cookie.
+                Работи само с eBag акаунт. Ако влизаш с Google, Apple или Facebook, използвай
+                Session cookie.
               </p>
               <Input
                 type="email"
@@ -153,10 +171,27 @@ function LoginForm({ onLoginWithCredentials, onLoginWithCookie, state, logs }) {
           ) : (
             <form onSubmit={handleCookieSubmit} className="space-y-3">
               <ol className="list-decimal list-inside space-y-1 text-xs text-muted-foreground">
-                <li>Влез в <a href="https://www.ebag.bg" target="_blank" rel="noopener noreferrer" className="underline">ebag.bg</a></li>
-                <li>Отвори DevTools (F12) → таб <strong>Application</strong></li>
-                <li>Cookies → <strong>https://www.ebag.bg</strong></li>
-                <li>Копирай стойността на <code className="rounded bg-muted px-1 font-mono">sessionid</code></li>
+                <li>
+                  Влез в{" "}
+                  <a
+                    href="https://www.ebag.bg"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline"
+                  >
+                    ebag.bg
+                  </a>
+                </li>
+                <li>
+                  Отвори DevTools (F12) → таб <strong>Application</strong>
+                </li>
+                <li>
+                  Cookies → <strong>https://www.ebag.bg</strong>
+                </li>
+                <li>
+                  Копирай стойността на{" "}
+                  <code className="rounded bg-muted px-1 font-mono">sessionid</code>
+                </li>
               </ol>
               <img
                 src="/session-cookie-guide.png"
@@ -426,6 +461,10 @@ export default function App() {
                   <Crosshair size={14} className="mr-1 inline" />
                   Реалитест
                 </NavLink>
+                <NavLink to="/categorizer" className={navClass}>
+                  <Tag size={14} className="mr-1 inline" />
+                  Категоризатор
+                </NavLink>
               </nav>
               <div className="ml-auto flex items-center gap-2">
                 <Tooltip>
@@ -436,7 +475,10 @@ export default function App() {
                       className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-40 disabled:pointer-events-none"
                       aria-label="Синхронизирай данните"
                     >
-                      <RefreshCw size={16} className={syncState === "running" ? "animate-spin" : ""} />
+                      <RefreshCw
+                        size={16}
+                        className={syncState === "running" ? "animate-spin" : ""}
+                      />
                     </button>
                   </TooltipTrigger>
                   <TooltipContent>Синхронизирай</TooltipContent>
@@ -475,10 +517,7 @@ export default function App() {
               <p className="max-w-sm text-sm text-muted-foreground">
                 Натисни бутона по-долу, за да изтеглиш поръчките си от eBag.
               </p>
-              <Button
-                onClick={startSync}
-                disabled={syncState === "running"}
-              >
+              <Button onClick={startSync} disabled={syncState === "running"}>
                 {syncState === "running" ? (
                   <>
                     <RefreshCw size={14} className="animate-spin" /> Синхронизиране...
@@ -492,7 +531,7 @@ export default function App() {
             </div>
           ) : data ? (
             <ErrorBoundary>
-              <AnimatedRoutes data={data} />
+              <AnimatedRoutes data={data} onReload={loadData} />
             </ErrorBoundary>
           ) : (
             <div className="flex min-h-screen items-center justify-center">

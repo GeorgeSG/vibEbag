@@ -13,9 +13,26 @@
     "version:patch": "npm version patch && git push --follow-tags",
     "version:minor": "npm version minor && git push --follow-tags",
     "version:major": "npm version major && git push --follow-tags",
-    "docker:publish": "docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/georgesg/vibebag:latest -t ghcr.io/georgesg/vibebag:$(node -p \"require('./package.json').version\") --push ."
+    "docker:publish": "docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/georgesg/vibebag:latest -t ghcr.io/georgesg/vibebag:$(node -p \"require('./package.json').version\") --push .",
+    "prepare": "husky"
   },
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "@eslint/js": "^10.0.1",
+    "concurrently": "^9.1.2",
+    "eslint": "^10.1.0",
+    "globals": "^17.4.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.8.1"
+  },
+  "lint-staged": {
+    "server/**/*.js": [
+      "eslint --fix --config server/eslint.config.js",
+      "prettier --write"
+    ],
+    "dashboard/src/**/*.{js,jsx}": [
+      "eslint --fix --config dashboard/eslint.config.js",
+      "prettier --write"
+    ]
   }
 }

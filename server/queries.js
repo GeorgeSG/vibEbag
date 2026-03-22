@@ -30,26 +30,18 @@ function loadRawData() {
  * @returns {{ totalSpend: number, totalOrders: number, avgBasket: number, totalSaved: number, totalTips: number, tippedPct: number }}
  */
 function computeKpis(orders) {
-  const totalSpend = orders.reduce(
-    (sum, o) => sum + toEur(o.final_amount_eur, o.final_amount),
-    0,
-  );
+  const totalSpend = orders.reduce((sum, o) => sum + toEur(o.final_amount_eur, o.final_amount), 0);
   const totalOrders = orders.length;
   const avgBasket = totalOrders > 0 ? totalSpend / totalOrders : 0;
   const totalSaved = orders.reduce(
     (sum, o) => sum + toEur(o.overall_saved_eur, o.overall_saved),
     0,
   );
-  const totalTips = orders.reduce(
-    (sum, o) => sum + toEur(o.overall_tip_eur, o.overall_tip),
-    0,
-  );
+  const totalTips = orders.reduce((sum, o) => sum + toEur(o.overall_tip_eur, o.overall_tip), 0);
   const tippedPct =
     totalOrders > 0
       ? +(
-          (orders.filter((o) => toEur(o.overall_tip_eur, o.overall_tip) > 0)
-            .length /
-            totalOrders) *
+          (orders.filter((o) => toEur(o.overall_tip_eur, o.overall_tip) > 0).length / totalOrders) *
           100
         ).toFixed(0)
       : 0;
@@ -69,8 +61,7 @@ function computeMonthlySpend(orders) {
   orders.forEach((o) => {
     if (!o.shipping_date) return;
     const month = o.shipping_date.slice(0, 7);
-    monthMap[month] =
-      (monthMap[month] || 0) + toEur(o.final_amount_eur, o.final_amount);
+    monthMap[month] = (monthMap[month] || 0) + toEur(o.final_amount_eur, o.final_amount);
     monthCountMap[month] = (monthCountMap[month] || 0) + 1;
   });
 
@@ -132,8 +123,7 @@ function computeOrdersByTimeSlot(orders) {
 function computeCategorySpend(items) {
   const catMap = {};
   items.forEach((item) => {
-    catMap[item.category] =
-      (catMap[item.category] || 0) + toEur(item.price_eur, item.price);
+    catMap[item.category] = (catMap[item.category] || 0) + toEur(item.price_eur, item.price);
   });
   return Object.entries(catMap)
     .sort(([, a], [, b]) => b - a)
@@ -162,10 +152,7 @@ function buildProductMap(items) {
       };
     }
     productMap[name].spend += toEur(item.price_eur, item.price);
-    productMap[name].unitPriceSum += toEur(
-      item.current_price_eur,
-      item.current_price,
-    );
+    productMap[name].unitPriceSum += toEur(item.current_price_eur, item.current_price);
     productMap[name].count += 1;
   });
   return productMap;
@@ -243,17 +230,12 @@ function computeProductList(orders, items) {
     .map((p) => {
       const sorted = p.priceHistory
         .sort((a, b) => a.date.localeCompare(b.date))
-        .filter(
-          (entry, i, arr) =>
-            i === arr.length - 1 || entry.date !== arr[i + 1].date,
-        );
+        .filter((entry, i, arr) => i === arr.length - 1 || entry.date !== arr[i + 1].date);
       return {
         ...p,
         totalSpend: +p.totalSpend.toFixed(2),
         avgPrice: sorted.length
-          ? +(
-              sorted.reduce((s, e) => s + e.unitPrice, 0) / sorted.length
-            ).toFixed(2)
+          ? +(sorted.reduce((s, e) => s + e.unitPrice, 0) / sorted.length).toFixed(2)
           : 0,
         firstPurchase: sorted[0]?.date ?? null,
         lastPurchase: sorted.at(-1)?.date ?? null,
@@ -306,9 +288,7 @@ function computeOrderList(orders, items) {
     })
     .sort((a, b) => b.date.localeCompare(a.date));
 
-  const topOrders = [...orderList]
-    .sort((a, b) => b.total - a.total)
-    .slice(0, 5);
+  const topOrders = [...orderList].sort((a, b) => b.total - a.total).slice(0, 5);
 
   return { orderList, topOrders };
 }
@@ -323,8 +303,7 @@ function computePromoDependency(items) {
   const promoCatMap = {};
   items.forEach((item) => {
     const cat = item.category;
-    if (!promoCatMap[cat])
-      promoCatMap[cat] = { totalSpend: 0, promoSpend: 0 };
+    if (!promoCatMap[cat]) promoCatMap[cat] = { totalSpend: 0, promoSpend: 0 };
     const spend = toEur(item.price_eur, item.price);
     promoCatMap[cat].totalSpend += spend;
     if (item.price_promo !== null && item.price_promo > 0) {
@@ -377,20 +356,13 @@ function computeTopBrands(items) {
  * @returns {{ id: number, name: string, brand: string, category: string, count: number, loyalty: number }[]}
  */
 function computeLoyaltyScores(orders, productList) {
-  const allMonths = [
-    ...new Set(orders.map((o) => o.shipping_date?.slice(0, 7)).filter(Boolean)),
-  ];
+  const allMonths = [...new Set(orders.map((o) => o.shipping_date?.slice(0, 7)).filter(Boolean))];
   const totalMonths = allMonths.length;
   return productList
     .filter((p) => p.count >= 3)
     .map((p) => {
-      const purchaseMonths = new Set(
-        p.priceHistory.map((e) => e.date.slice(0, 7)),
-      );
-      const loyalty =
-        totalMonths > 0
-          ? +((purchaseMonths.size / totalMonths) * 100).toFixed(0)
-          : 0;
+      const purchaseMonths = new Set(p.priceHistory.map((e) => e.date.slice(0, 7)));
+      const loyalty = totalMonths > 0 ? +((purchaseMonths.size / totalMonths) * 100).toFixed(0) : 0;
       return {
         id: p.id,
         name: p.name,
@@ -402,6 +374,51 @@ function computeLoyaltyScores(orders, productList) {
     })
     .sort((a, b) => b.loyalty - a.loyalty)
     .slice(0, 15);
+}
+
+/**
+ * Returns all unique products categorized as "Друго", with name, brand, and purchase count.
+ * @returns {{ products: { id: number, name: string, brand: string, count: number }[], categories: string[] }}
+ */
+export function getUncategorized() {
+  const products = db
+    .prepare(
+      `SELECT p.id, p.name_bg, p.name_en, p.brand,
+              COUNT(oi.id) as count
+       FROM products p
+       JOIN categories c ON p.category_id = c.id
+       LEFT JOIN order_items oi ON oi.product_id = p.id
+       WHERE c.name = 'Друго'
+       GROUP BY p.id
+       ORDER BY count DESC`,
+    )
+    .all()
+    .map((p) => ({
+      id: p.id,
+      name: p.name_bg || p.name_en || "—",
+      brand: p.brand,
+      count: p.count,
+    }));
+
+  const categories = db
+    .prepare("SELECT name FROM categories WHERE name != 'Друго' ORDER BY name")
+    .all()
+    .map((c) => c.name);
+
+  return { products, categories };
+}
+
+/**
+ * Updates a product's category. Creates the category if it doesn't exist.
+ * @param {number} productId
+ * @param {string} categoryName
+ * @returns {{ ok: boolean }}
+ */
+export function categorizeProduct(productId, categoryName) {
+  const cat = db.prepare("SELECT id FROM categories WHERE name = ?").get(categoryName);
+  if (!cat) return { ok: false };
+  db.prepare("UPDATE products SET category_id = ? WHERE id = ?").run(cat.id, productId);
+  return { ok: true };
 }
 
 // --- Public API ---

@@ -1,11 +1,9 @@
 import express from "express";
 import { spawn } from "child_process";
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from "fs";
-import { getDashboardData, hasData } from "./queries.js";
+import { getDashboardData, hasData, getUncategorized, categorizeProduct } from "./queries.js";
 import { importFromJson } from "./import.js";
-import {
-  DATA_DIR, DIST_DIR, DATA_FILE, COOKIE_FILE, CREDENTIALS_FILE, PORT,
-} from "./config.js";
+import { DATA_DIR, DIST_DIR, DATA_FILE, COOKIE_FILE, CREDENTIALS_FILE, PORT } from "./config.js";
 
 let activeJob = null;
 
@@ -16,8 +14,7 @@ function sseJob(res, req, script, { onDone } = {}) {
     Connection: "keep-alive",
   });
 
-  const send = (type, text) =>
-    res.write(`data: ${JSON.stringify({ type, text })}\n\n`);
+  const send = (type, text) => res.write(`data: ${JSON.stringify({ type, text })}\n\n`);
 
   const child = spawn("node", [script], {
     cwd: import.meta.dirname,
@@ -47,7 +44,9 @@ function guardedSseJob(name, res, req, script, opts = {}) {
   }
   activeJob = name;
   const child = sseJob(res, req, script, opts);
-  const cleanup = () => { activeJob = null; };
+  const cleanup = () => {
+    activeJob = null;
+  };
   child.on("close", cleanup);
   req.on("close", cleanup);
   return child;
@@ -83,10 +82,7 @@ app.post("/api/credentials", (req, res) => {
     return res.status(400).json({ error: "Липсващи полета" });
   }
   if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true });
-  writeFileSync(
-    CREDENTIALS_FILE,
-    JSON.stringify({ email, password }, null, 2),
-  );
+  writeFileSync(CREDENTIALS_FILE, JSON.stringify({ email, password }, null, 2));
   res.json({ ok: true });
 });
 
@@ -108,6 +104,22 @@ app.post("/api/cookies", (req, res) => {
     },
   ];
   writeFileSync(COOKIE_FILE, JSON.stringify(cookies, null, 2));
+  res.json({ ok: true });
+});
+
+app.get("/api/uncategorized", (req, res) => {
+  res.json(getUncategorized());
+});
+
+app.post("/api/categorize", (req, res) => {
+  const { productId, category } = req.body;
+  if (!productId || !category) {
+    return res.status(400).json({ error: "Липсващи полета" });
+  }
+  const result = categorizeProduct(productId, category);
+  if (!result.ok) {
+    return res.status(400).json({ error: "Невалидна категория" });
+  }
   res.json({ ok: true });
 });
 
@@ -144,7 +156,7 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-const server = app.listen(PORT, () => {
+app.listen(PORT, () => {
   const mode = process.env.NODE_ENV === "production" ? "production" : "dev";
   console.log(`vibEbag server (${mode}) listening on port ${PORT}`);
 
