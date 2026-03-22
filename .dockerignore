@@ -1,0 +1,10 @@
+node_modules
+dashboard/node_modules
+server/node_modules
+data
+dist
+.git
+.claude
+.DS_Store
+*.log
+docs
