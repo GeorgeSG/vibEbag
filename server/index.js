@@ -90,6 +90,27 @@ app.post("/api/credentials", (req, res) => {
   res.json({ ok: true });
 });
 
+app.post("/api/cookies", (req, res) => {
+  const { sessionid } = req.body;
+  if (!sessionid) {
+    return res.status(400).json({ error: "Липсва sessionid" });
+  }
+  if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true });
+  const cookies = [
+    {
+      name: "sessionid",
+      value: sessionid.trim(),
+      domain: "www.ebag.bg",
+      path: "/",
+      httpOnly: true,
+      secure: false,
+      sameSite: "Lax",
+    },
+  ];
+  writeFileSync(COOKIE_FILE, JSON.stringify(cookies, null, 2));
+  res.json({ ok: true });
+});
+
 app.get("/api/login", (req, res) => {
   guardedSseJob("login", res, req, "auth.js");
 });
