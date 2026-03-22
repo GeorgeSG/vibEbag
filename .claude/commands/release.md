@@ -1,3 +1,9 @@
+---
+description: Release a new version — bump, publish Docker image, and create GitHub release.
+argument-hint: "[patch|minor|major]"
+allowed-tools: Bash(npm run version:*), Bash(npm run docker:publish), Bash(git *), Bash(gh *)
+---
+
 Release a new version. The argument is the bump type: patch, minor, or major.
 
 ## Steps
