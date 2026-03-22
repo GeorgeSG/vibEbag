@@ -106,6 +106,12 @@ export default function Categorizer() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-8">
+      {/* Explanation */}
+      <p className="mb-6 text-sm text-muted-foreground">
+        Някои продукти от eBag нямат категория или попадат в &quot;Друго&quot;. Задай им правилната
+        категория, за да са точни графиките и статистиките в таблото.
+      </p>
+
       {/* Progress */}
       <div className="mb-6">
         <div className="mb-1.5 flex items-center justify-between text-sm">
