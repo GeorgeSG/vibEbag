@@ -152,3 +152,14 @@ body {
 .animate-fade-in {
   animation: fade-in 0.25s ease-out;
 }
+
+@keyframes menuItemIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

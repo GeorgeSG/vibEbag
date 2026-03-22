@@ -14,7 +14,7 @@
     </filter>
   </defs>
 
-  <rect width="512" height="512" rx="120" fill="#F8FAFC"/>
+  <rect width="512" height="512" rx="120" fill="#FFFFFF" fill-opacity="0.1"/>
 
   <g filter="url(#softShadow)">
     <path d="M96 160C96 132 120 108 148 108H364C392 108 416 132 416 160V336C416 380 380 416 336 416H176C132 416 96 380 96 336V160Z" fill="url(#bagGrad)"/>

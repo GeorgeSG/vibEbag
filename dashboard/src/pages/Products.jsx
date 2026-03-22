@@ -321,7 +321,7 @@ export default function Products({ productList, onReload }) {
   return (
     <div className="mx-auto max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 sm:py-8">
       <Sheet open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
-        <SheetContent className="!w-[92vw] !max-w-none overflow-y-auto p-4 pt-12 md:!w-[60vw] md:p-8 md:pt-14">
+        <SheetContent className="!w-full !max-w-none overflow-y-auto p-4 pt-12 md:!w-[60vw] md:p-8 md:pt-14">
           {selected && (
             <PriceHistory
               product={selected}
