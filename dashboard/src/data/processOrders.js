@@ -11,6 +11,23 @@ function toEur(eurVal, bgnVal) {
 }
 
 export function processOrders(details) {
+  // Build product ID → category lookup from non-changed-quantity groups
+  const productCategoryMap = {};
+  details.forEach((d) => {
+    const sources = [
+      ...(d.grouped_items ?? []),
+      ...(d.additional_orders ?? []).flatMap((ao) => ao.grouped_items ?? []),
+    ];
+    sources.forEach((g) => {
+      const cat = g.group_name;
+      if (!cat || cat === "Променени количества") return;
+      (g.group_items ?? []).forEach((item) => {
+        const id = item.product_saved?.id;
+        if (id) productCategoryMap[id] = cat;
+      });
+    });
+  });
+
   // Flatten all line items from all orders (main + additional)
   const allItems = details.flatMap((d) => {
     const sources = [
@@ -18,12 +35,18 @@ export function processOrders(details) {
       ...(d.additional_orders ?? []).flatMap((ao) => ao.grouped_items ?? []),
     ];
     return sources.flatMap((g) =>
-      (g.group_items ?? []).map((item) => ({
-        ...item,
-        category: g.group_name ?? "Друго",
-        order_date: d.order?.shipping_date,
-        order_id: d.encrypted_id,
-      })),
+      (g.group_items ?? []).map((item) => {
+        let category = g.group_name ?? "Друго";
+        if (category === "Променени количества") {
+          category = productCategoryMap[item.product_saved?.id] ?? "Друго";
+        }
+        return {
+          ...item,
+          category,
+          order_date: d.order?.shipping_date,
+          order_id: d.encrypted_id,
+        };
+      }),
     );
   });
 
@@ -94,7 +117,7 @@ export function processOrders(details) {
   // --- Spend by category ---
   const catMap = {};
   allItems.forEach((item) => {
-    if (item.category === "Променени количества") return;
+
     catMap[item.category] = (catMap[item.category] || 0) + toEur(item.price_eur, item.price);
   });
   const categorySpend = Object.entries(catMap)
@@ -104,7 +127,7 @@ export function processOrders(details) {
   // --- Top products by total spend ---
   const productMap = {};
   allItems.forEach((item) => {
-    if (item.category === "Променени количества") return;
+
     const name = item.product_saved?.name_bg || item.product_saved?.name_en;
     if (!name) return;
     if (!productMap[name]) {
@@ -129,7 +152,7 @@ export function processOrders(details) {
   // --- Per-product price history ---
   const productHistoryMap = {};
   allItems.forEach((item) => {
-    if (item.category === "Променени количества") return;
+
     const ps = item.product_saved;
     if (!ps) return;
     const id = ps.id;
@@ -187,15 +210,15 @@ export function processOrders(details) {
         ...(d.additional_orders ?? []).flatMap((ao) => ao.grouped_items ?? []),
       ];
       const items = sources.flatMap((g) =>
-        (g.group_items ?? [])
-          .filter(() => g.group_name !== "Променени количества")
-          .map((item) => {
+        (g.group_items ?? []).map((item) => {
             const qty = parseFloat(item.quantity) || 1;
             const total = +toEur(item.price_eur, item.price).toFixed(2);
             return {
               name: item.product_saved?.name_bg || item.product_saved?.name_en || "—",
               productId: item.product_saved?.id ?? null,
-              category: g.group_name ?? "Друго",
+              category: (g.group_name && g.group_name !== "Променени количества")
+                ? g.group_name
+                : (productCategoryMap[item.product_saved?.id] ?? "Друго"),
               qty,
               unitPrice: +(total / qty).toFixed(2),
               total,
@@ -229,7 +252,7 @@ export function processOrders(details) {
   // --- Promo dependency per category ---
   const promoCatMap = {};
   allItems.forEach((item) => {
-    if (item.category === "Променени количества") return;
+
     const cat = item.category;
     if (!promoCatMap[cat]) promoCatMap[cat] = { totalSpend: 0, promoSpend: 0 };
     const spend = toEur(item.price_eur, item.price);
@@ -254,7 +277,7 @@ export function processOrders(details) {
   // --- Top brands by spend ---
   const brandMap = {};
   allItems.forEach((item) => {
-    if (item.category === "Променени количества") return;
+
     const brand = item.product_saved?.brand;
     if (!brand) return;
     const trimmed = brand.trim();

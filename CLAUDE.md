@@ -114,7 +114,8 @@ Response: `{ order, grouped_items: [{ group_name, group_items }], additional_ord
 
 **Important processing rules:**
 - `grouped_items` covers the main order; `additional_orders[].grouped_items` covers add-on orders. Flatten both.
-- Skip `group_name = "Променени количества"` and `group_name = null` — these are picker-adjusted duplicates. Including them double-counts spend.
+- `group_name = "Променени количества"` contains weight-adjusted items (e.g. ordered 1 kg, picked 1.106 kg). These are NOT duplicates — the item only appears here, not in its original category group. `processOrders.js` resolves their category by looking up the product ID in other orders; falls back to "Друго".
+- Skip `group_name = null` — these are picker-adjusted duplicates.
 - `order_status`: `4` = delivered, `3` = cancelled/other
 - `unit_type`: `1` = sold by weight (kg), `2` = sold by unit
 - `item.price` = quantity × unit price. Use `product_saved.current_price` for the unit price.
