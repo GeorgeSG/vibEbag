@@ -1,13 +1,15 @@
 {
-  "name": "vibebag-scraper",
-  "version": "1.0.0",
+  "name": "vibebag-server",
+  "private": true,
   "type": "module",
   "scripts": {
+    "start": "node index.js",
     "login": "node auth.js",
     "fetch": "node fetch-orders.js",
     "seed": "node seed.js"
   },
   "dependencies": {
+    "express": "^5.1.0",
     "playwright": "^1.43.0"
   },
   "devDependencies": {

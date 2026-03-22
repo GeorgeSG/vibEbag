@@ -1,0 +1,17 @@
+{
+  "name": "vibebag",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -k -n server,vite -c blue,green \"node server/index.js\" \"cd dashboard && npx vite\"",
+    "dev:seeded": "USE_SEED=true concurrently -k -n server,vite -c blue,green \"USE_SEED=true node server/index.js\" \"cd dashboard && VITE_USE_SEED=true npx vite\"",
+    "build": "cd dashboard && npm run build",
+    "start": "NODE_ENV=production node server/index.js",
+    "seed": "cd server && node seed.js",
+    "install:all": "cd dashboard && npm install && cd ../server && npm install",
+    "docker:publish": "docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/georgesg/vibebag:latest --push ."
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

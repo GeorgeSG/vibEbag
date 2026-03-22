@@ -2,13 +2,18 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { resolve } from "path";
-import scraperPlugin from "./scraper-plugin.js";
 
 export default defineConfig({
-  plugins: [scraperPlugin(), react(), tailwindcss()],
+  plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
       "@": resolve(__dirname, "./src"),
+    },
+  },
+  server: {
+    proxy: {
+      "/api": "http://localhost:3001",
+      "/data/order-details.json": "http://localhost:3001",
     },
   },
 });
