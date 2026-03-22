@@ -412,6 +412,15 @@ export default function App() {
               >
                 gar.dev
               </a>
+              <span className="text-muted-foreground/40">·</span>
+              <a
+                href="https://github.com/GeorgeSG/vibEbag"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground/40 hover:text-muted-foreground transition-colors"
+              >
+                v{__APP_VERSION__}
+              </a>
             </span>
           </footer>
 

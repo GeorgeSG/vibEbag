@@ -1,5 +1,6 @@
 {
   "name": "vibebag",
+  "version": "0.0.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,7 +10,10 @@
     "start": "NODE_ENV=production node server/index.js",
     "seed": "cd server && node seed.js",
     "install:all": "cd dashboard && npm install && cd ../server && npm install",
-    "docker:publish": "docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/georgesg/vibebag:latest --push ."
+    "version:patch": "npm version patch && git push && git push --tags",
+    "version:minor": "npm version minor && git push && git push --tags",
+    "version:major": "npm version major && git push && git push --tags",
+    "docker:publish": "docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/georgesg/vibebag:latest -t ghcr.io/georgesg/vibebag:$(node -p \"require('./package.json').version\") --push ."
   },
   "devDependencies": {
     "concurrently": "^9.1.2"
