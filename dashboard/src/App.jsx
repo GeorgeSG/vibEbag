@@ -1,6 +1,6 @@
 import { Component, useCallback, useEffect, useState } from "react";
 import { BrowserRouter, NavLink, Route, Routes, useLocation } from "react-router-dom";
-import { Moon, Sun, Heart, Bot, RefreshCw, AlertCircle, LogIn, Crosshair } from "lucide-react";
+import { Moon, Sun, Heart, Bot, RefreshCw, AlertCircle, LogIn, Crosshair, Download } from "lucide-react";
 import { LogViewer } from "@/components/ui/log-viewer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -138,6 +138,7 @@ export default function App() {
   const [status, setStatus] = useState(null); // null | { hasCredentials, hasCookies, email }
   const [data, setData] = useState(null);
   const [loadError, setLoadError] = useState(null);
+  const [noData, setNoData] = useState(false);
   const { theme, toggle } = useTheme();
   const [syncState, setSyncState] = useState("idle");
   const [syncLogs, setSyncLogs] = useState("");
@@ -146,12 +147,19 @@ export default function App() {
 
   const loadData = useCallback(() => {
     setLoadError(null);
+    setNoData(false);
     fetch("/data/order-details.json")
       .then((r) => {
+        if (r.status === 404) {
+          setNoData(true);
+          return null;
+        }
         if (!r.ok) throw new Error(`Грешка при зареждане на данните (${r.status})`);
         return r.json();
       })
-      .then((raw) => setData(processOrders(raw)))
+      .then((raw) => {
+        if (raw) setData(processOrders(raw));
+      })
       .catch((err) => setLoadError(err.message));
   }, []);
 
@@ -358,6 +366,28 @@ export default function App() {
               >
                 Опитай отново
               </button>
+            </div>
+          ) : noData ? (
+            <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-6 text-center">
+              <Download size={40} className="text-muted-foreground" />
+              <h2 className="text-lg font-semibold">Няма заредени данни</h2>
+              <p className="max-w-sm text-sm text-muted-foreground">
+                Натисни бутона по-долу, за да изтеглиш поръчките си от eBag.
+              </p>
+              <Button
+                onClick={startSync}
+                disabled={syncState === "running"}
+              >
+                {syncState === "running" ? (
+                  <>
+                    <RefreshCw size={14} className="animate-spin" /> Синхронизиране...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw size={14} /> Синхронизирай
+                  </>
+                )}
+              </Button>
             </div>
           ) : data ? (
             <ErrorBoundary>
