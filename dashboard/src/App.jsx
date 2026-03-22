@@ -12,6 +12,8 @@ import {
   Download,
   Cookie,
   Tag,
+  Menu,
+  X,
 } from "lucide-react";
 import { LogViewer } from "@/components/ui/log-viewer";
 import { Badge } from "@/components/ui/badge";
@@ -255,6 +257,7 @@ export default function App() {
   const [syncLogs, setSyncLogs] = useState("");
   const [loginState, setLoginState] = useState("idle");
   const [loginLogs, setLoginLogs] = useState("");
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const loadData = useCallback(() => {
     setLoadError(null);
@@ -441,17 +444,25 @@ export default function App() {
       <TooltipProvider>
         <div className="flex min-h-screen flex-col bg-background">
           <header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur">
-            <div className="mx-auto flex max-w-6xl items-center gap-6 px-6 py-4">
+            <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-4 md:gap-6 md:px-6">
               <NavLink
                 to="/"
                 className="flex items-center gap-2 text-lg font-semibold tracking-tight"
+                onClick={() => setMenuOpen(false)}
               >
                 <img src="/logo.svg" alt="vibEbag logo" className="h-10 w-10 rounded-lg" />
                 <span>
                   vib<span style={{ color: "var(--brand)" }}>Ebag</span>
                 </span>
               </NavLink>
-              <nav className="flex items-center gap-5 ml-2">
+              <button
+                onClick={() => setMenuOpen(!menuOpen)}
+                className="md:hidden rounded-md p-2 text-muted-foreground hover:bg-muted"
+                aria-label="Меню"
+              >
+                {menuOpen ? <X size={20} /> : <Menu size={20} />}
+              </button>
+              <nav className="hidden md:flex items-center gap-5 ml-2">
                 <NavLink to="/" end className={navClass}>
                   Преглед
                 </NavLink>
@@ -512,6 +523,40 @@ export default function App() {
               </div>
             </div>
           </header>
+
+          {menuOpen && (
+            <div className="fixed inset-0 top-[73px] z-40 bg-background/95 backdrop-blur-sm md:hidden">
+              <nav className="flex flex-col gap-1 px-4 py-4">
+                <NavLink to="/" end className={navClass} onClick={() => setMenuOpen(false)}>
+                  Преглед
+                </NavLink>
+                <NavLink to="/products" className={navClass} onClick={() => setMenuOpen(false)}>
+                  Продукти
+                  {data && (
+                    <Badge variant="secondary" className="ml-1.5 px-1.5 py-0 text-xs">
+                      {data.productList.length}
+                    </Badge>
+                  )}
+                </NavLink>
+                <NavLink to="/orders" className={navClass} onClick={() => setMenuOpen(false)}>
+                  Поръчки
+                  {data && (
+                    <Badge variant="secondary" className="ml-1.5 px-1.5 py-0 text-xs">
+                      {data.totalOrders}
+                    </Badge>
+                  )}
+                </NavLink>
+                <NavLink to="/realitest" className={navClass} onClick={() => setMenuOpen(false)}>
+                  <Crosshair size={14} className="mr-1 inline" />
+                  Реалитест
+                </NavLink>
+                <NavLink to="/categorizer" className={navClass} onClick={() => setMenuOpen(false)}>
+                  <Tag size={14} className="mr-1 inline" />
+                  Категоризатор
+                </NavLink>
+              </nav>
+            </div>
+          )}
 
           <main className="flex-1">
             {loadError ? (

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useMobile } from "@/hooks/useMobile";
 import { useNavigate } from "react-router-dom";
 import {
   CreditCard,
@@ -46,6 +47,7 @@ import {
 
 export default function Overview({ data }) {
   const navigate = useNavigate();
+  const isMobile = useMobile();
   const [topMode, setTopMode] = useState("spend");
   const [brandsMode, setBrandsMode] = useState("spend");
   const {
@@ -114,7 +116,7 @@ export default function Overview({ data }) {
   );
 
   return (
-    <main className="mx-auto max-w-6xl space-y-8 px-6 py-8">
+    <main className="mx-auto max-w-6xl space-y-8 px-4 py-6 sm:px-6 sm:py-8">
       {/* KPI cards */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
         <StatTile
@@ -286,12 +288,15 @@ export default function Overview({ data }) {
                 <YAxis
                   dataKey="name"
                   type="category"
-                  width={160}
+                  width={isMobile ? 90 : 160}
                   tickLine={false}
                   axisLine={false}
                   tickMargin={8}
                   tick={{ fontSize: 10 }}
-                  tickFormatter={(v) => (v.length > 22 ? v.slice(0, 22) + "…" : v)}
+                  tickFormatter={(v) => {
+                    const max = isMobile ? 12 : 22;
+                    return v.length > max ? v.slice(0, max) + "…" : v;
+                  }}
                 />
                 <ChartTooltip
                   content={
@@ -422,7 +427,7 @@ export default function Overview({ data }) {
           {inflationProducts.length === 0 ? (
             <p className="text-sm text-muted-foreground">Няма поскъпнали продукти за този период</p>
           ) : (
-            <ul className="grid grid-cols-2 divide-y divide-border gap-x-8">
+            <ul className="grid grid-cols-1 divide-y divide-border gap-x-4 sm:grid-cols-2 sm:gap-x-8">
               {inflationProducts.map((p) => (
                 <li
                   key={p.name}
@@ -494,11 +499,15 @@ export default function Overview({ data }) {
                 <YAxis
                   dataKey="category"
                   type="category"
-                  width={180}
+                  width={isMobile ? 100 : 180}
                   tickLine={false}
                   axisLine={false}
                   tickMargin={8}
                   tick={{ fontSize: 10 }}
+                  tickFormatter={(v) => {
+                    const max = isMobile ? 14 : 30;
+                    return v.length > max ? v.slice(0, max) + "…" : v;
+                  }}
                 />
                 <ChartTooltip
                   content={({ active, payload }) => {
@@ -565,12 +574,15 @@ export default function Overview({ data }) {
                 <YAxis
                   dataKey="brand"
                   type="category"
-                  width={160}
+                  width={isMobile ? 90 : 160}
                   tickLine={false}
                   axisLine={false}
                   tickMargin={8}
                   tick={{ fontSize: 10 }}
-                  tickFormatter={(v) => (v.length > 22 ? v.slice(0, 22) + "…" : v)}
+                  tickFormatter={(v) => {
+                    const max = isMobile ? 12 : 22;
+                    return v.length > max ? v.slice(0, max) + "…" : v;
+                  }}
                 />
                 <ChartTooltip
                   content={

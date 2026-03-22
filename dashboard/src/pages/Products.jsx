@@ -72,7 +72,7 @@ function PriceHistory({ product, onNavigateOrder, categories, onCategorized }) {
             <EBagLink type="product" id={product.id} variant="button" />
           </div>
         </div>
-        <div className="grid grid-cols-3 gap-3 pt-1">
+        <div className="grid grid-cols-2 gap-3 pt-1 md:grid-cols-3">
           <StatTile
             variant="sheet"
             label="Покупки"
@@ -317,9 +317,9 @@ export default function Products({ productList, onReload }) {
   const paginated = sorted.slice(page * pageSize, (page + 1) * pageSize);
 
   return (
-    <div className="mx-auto max-w-screen-2xl space-y-6 px-6 py-8">
+    <div className="mx-auto max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 sm:py-8">
       <Sheet open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
-        <SheetContent className="!w-[60vw] !max-w-none overflow-y-auto p-8 pt-14">
+        <SheetContent className="!w-[92vw] !max-w-none overflow-y-auto p-4 pt-12 md:!w-[60vw] md:p-8 md:pt-14">
           {selected && (
             <PriceHistory
               product={selected}
@@ -332,7 +332,7 @@ export default function Products({ productList, onReload }) {
       </Sheet>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between gap-4">
+        <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <CardTitle className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
             Продукти
           </CardTitle>
@@ -341,7 +341,7 @@ export default function Products({ productList, onReload }) {
               placeholder="Търси продукт или марка..."
               value={search}
               onChange={(e) => handleSearch(e.target.value)}
-              className="max-w-64"
+              className="w-full sm:max-w-64"
             />
             <CategoryFilter
               categories={allCategories}
@@ -374,14 +374,14 @@ export default function Products({ productList, onReload }) {
                 >
                   Общо
                 </SortHead>
-                <TableHead className="text-right">Ср. цена</TableHead>
-                <TableHead className="text-right">Последна цена</TableHead>
+                <TableHead className="hidden text-right md:table-cell">Ср. цена</TableHead>
+                <TableHead className="hidden text-right md:table-cell">Последна цена</TableHead>
                 <SortHead
                   col="firstPurchase"
                   sortKey={sortKey}
                   sortDir={sortDir}
                   onSort={handleSort}
-                  className="text-right"
+                  className="hidden text-right md:table-cell"
                 >
                   Първа покупка
                 </SortHead>
@@ -390,7 +390,7 @@ export default function Products({ productList, onReload }) {
                   sortKey={sortKey}
                   sortDir={sortDir}
                   onSort={handleSort}
-                  className="text-right"
+                  className="hidden text-right md:table-cell"
                 >
                   Последна покупка
                 </SortHead>
@@ -436,14 +436,16 @@ export default function Products({ productList, onReload }) {
                     </TableCell>
                     <TableCell className="text-right tabular-nums">{p.count}</TableCell>
                     <TableCell className="text-right tabular-nums">{fmt(p.totalSpend)} €</TableCell>
-                    <TableCell className="text-right tabular-nums">{fmt(p.avgPrice)} €</TableCell>
-                    <TableCell className="text-right tabular-nums">
+                    <TableCell className="hidden text-right tabular-nums md:table-cell">
+                      {fmt(p.avgPrice)} €
+                    </TableCell>
+                    <TableCell className="hidden text-right tabular-nums md:table-cell">
                       {lastPrice != null ? `${fmt(lastPrice)} €` : "—"}
                     </TableCell>
-                    <TableCell className="text-right tabular-nums text-muted-foreground">
+                    <TableCell className="hidden text-right tabular-nums text-muted-foreground md:table-cell">
                       {p.firstPurchase ? fmtDate(p.firstPurchase) : "—"}
                     </TableCell>
-                    <TableCell className="text-right tabular-nums text-muted-foreground">
+                    <TableCell className="hidden text-right tabular-nums text-muted-foreground md:table-cell">
                       {p.lastPurchase ? fmtDate(p.lastPurchase) : "—"}
                     </TableCell>
                     <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>

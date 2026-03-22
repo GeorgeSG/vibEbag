@@ -23,7 +23,7 @@ export function TablePagination({
   }
 
   return (
-    <div className="flex items-center justify-between border-t px-4 py-3 text-xs text-muted-foreground">
+    <div className="flex flex-col gap-2 border-t px-4 py-3 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-3">
         <span>
           {page * pageSize + 1}–{Math.min((page + 1) * pageSize, total)} от {total}

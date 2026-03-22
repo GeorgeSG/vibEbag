@@ -307,13 +307,16 @@ export default function PriceGame({ productList }) {
   // --- Intro screen ---
   if (phase === "intro") {
     return (
-      <div className="mx-auto max-w-2xl px-6 py-8">
+      <div className="mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-8">
         <Card>
           <CardContent className="p-8 text-center">
             {/* Product image grid */}
             <div className="mx-auto mb-6 grid w-fit grid-cols-3 gap-2">
               {heroProducts.map((p) => (
-                <div key={p.id} className="size-20 overflow-hidden rounded-xl border bg-white p-2">
+                <div
+                  key={p.id}
+                  className="size-16 overflow-hidden rounded-xl border bg-white p-2 sm:size-20"
+                >
                   <img src={productImg(p.id)} alt="" className="size-full object-contain" />
                 </div>
               ))}
@@ -376,12 +379,15 @@ export default function PriceGame({ productList }) {
       results.length > 0 ? results.reduce((s, r) => s + r.pctOff, 0) / results.length : 0;
 
     return (
-      <div className="mx-auto max-w-2xl px-6 py-8">
+      <div className="mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-8">
         <div className="mb-8 text-center">
           <p className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
             Резултат
           </p>
-          <p className="mt-2 text-5xl font-bold tracking-tight" style={{ color: "var(--brand)" }}>
+          <p
+            className="mt-2 text-3xl font-bold tracking-tight sm:text-5xl"
+            style={{ color: "var(--brand)" }}
+          >
             {totalScore} / {maxPossible}
           </p>
           <p className="mt-2 text-3xl">{rating.emoji}</p>
@@ -423,7 +429,7 @@ export default function PriceGame({ productList }) {
         </div>
 
         <Card>
-          <CardContent className="p-0">
+          <CardContent className="overflow-x-auto p-0">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b text-left text-xs uppercase tracking-widest text-muted-foreground">
@@ -442,11 +448,13 @@ export default function PriceGame({ productList }) {
                           <img
                             src={productImg(r.product.id)}
                             alt=""
-                            className="size-9 rounded object-contain bg-white shrink-0"
+                            className="hidden size-9 shrink-0 rounded object-contain bg-white sm:block"
                           />
                         )}
-                        <div>
-                          <div className="font-medium">{r.product.name}</div>
+                        <div className="min-w-0">
+                          <div className="truncate font-medium max-w-[140px] sm:max-w-none">
+                            {r.product.name}
+                          </div>
                           <div className="text-xs text-muted-foreground">{fmtDate(r.date)}</div>
                         </div>
                       </div>

@@ -17,7 +17,7 @@ export function StatTile({ label, value, sub, color, icon: Icon, variant = "page
             {Icon && <Icon size={14} style={{ color }} className="opacity-70" />}
           </div>
           <p
-            className="mt-1.5 text-2xl font-semibold tracking-tight tabular-nums"
+            className="mt-1.5 text-xl font-semibold tracking-tight tabular-nums sm:text-2xl"
             style={{ color }}
           >
             {value}
@@ -37,7 +37,7 @@ export function StatTile({ label, value, sub, color, icon: Icon, variant = "page
           </p>
           {Icon && <Icon size={15} style={{ color }} className="opacity-70" />}
         </div>
-        <p className="mt-2 text-3xl font-semibold tracking-tight" style={{ color }}>
+        <p className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl" style={{ color }}>
           {value}
         </p>
         {sub && <p className="mt-1 text-xs text-muted-foreground">{sub}</p>}

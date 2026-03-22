@@ -58,7 +58,7 @@ export function LogViewer({ state, logs, onClose, variant = "floating", labels, 
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 w-[30rem] rounded-lg border bg-background shadow-xl overflow-hidden">
+    <div className="fixed bottom-2 right-2 z-50 w-[calc(100vw-1rem)] rounded-lg border bg-background shadow-xl overflow-hidden sm:bottom-4 sm:right-4 sm:w-[30rem]">
       <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/50">
         <div className="flex items-center gap-2 text-sm font-medium">
           <StatusIcon state={state} />

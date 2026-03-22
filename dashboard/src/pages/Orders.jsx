@@ -63,7 +63,9 @@ function OrderDetail({ order, onNavigateProduct }) {
           </div>
           <EBagLink type="order" id={order.id} variant="button" className="mt-0.5" />
         </div>
-        <div className={`grid gap-3 pt-1 ${order.tip > 0 ? "grid-cols-4" : "grid-cols-3"}`}>
+        <div
+          className={`grid grid-cols-2 gap-3 pt-1 ${order.tip > 0 ? "md:grid-cols-4" : "md:grid-cols-3"}`}
+        >
           <StatTile
             variant="sheet"
             label="Продукти"
@@ -105,9 +107,9 @@ function OrderDetail({ order, onNavigateProduct }) {
             <TableHeader>
               <TableRow className="bg-muted/40">
                 <TableHead className="pl-4">Продукт</TableHead>
-                <TableHead>Категория</TableHead>
+                <TableHead className="hidden sm:table-cell">Категория</TableHead>
                 <TableHead className="text-right">Бр.</TableHead>
-                <TableHead className="text-right">Ед. цена</TableHead>
+                <TableHead className="hidden text-right sm:table-cell">Ед. цена</TableHead>
                 <TableHead className="text-right pr-4">Общо</TableHead>
                 <TableHead />
               </TableRow>
@@ -128,16 +130,16 @@ function OrderDetail({ order, onNavigateProduct }) {
                           className="size-8 rounded object-contain bg-white shrink-0"
                         />
                       )}
-                      <TruncatedName name={item.name} className="max-w-[340px]" />
+                      <TruncatedName name={item.name} className="max-w-[160px] sm:max-w-[340px]" />
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden sm:table-cell">
                     <CategoryBadge category={item.category} />
                   </TableCell>
                   <TableCell className="text-right tabular-nums text-muted-foreground">
                     {item.qty}
                   </TableCell>
-                  <TableCell className="text-right tabular-nums text-muted-foreground">
+                  <TableCell className="hidden text-right tabular-nums text-muted-foreground sm:table-cell">
                     {fmt(item.unitPrice)} €
                   </TableCell>
                   <TableCell className="text-right tabular-nums pr-4">
@@ -189,9 +191,9 @@ export default function Orders({ orderList }) {
   const paginated = sorted.slice(page * pageSize, (page + 1) * pageSize);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 px-6 py-8">
+    <div className="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:px-6 sm:py-8">
       <Sheet open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
-        <SheetContent className="!w-[60vw] !max-w-none overflow-y-auto p-8 pt-14">
+        <SheetContent className="!w-[92vw] !max-w-none overflow-y-auto p-4 pt-12 md:!w-[60vw] md:p-8 md:pt-14">
           {selected && (
             <OrderDetail
               order={selected}
