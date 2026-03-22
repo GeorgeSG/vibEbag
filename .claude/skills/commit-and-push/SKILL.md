@@ -1,4 +1,6 @@
 ---
+name: commit-and-push
+model: sonnet
 description: Run lint/format/build checks, fix issues, split changes into semantic commits, and push.
 argument-hint: "[preapproved]"
 allowed-tools: Bash(npx eslint *), Bash(npx prettier *), Bash(npx vite build), Bash(npm run seed), Bash(git *), Bash(node -c *), Bash(timeout *)
