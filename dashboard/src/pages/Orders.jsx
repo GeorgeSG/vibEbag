@@ -32,7 +32,11 @@ function TruncatedName({ name, className }) {
     if (el) setIsTruncated(el.scrollWidth > el.clientWidth);
   }, [name]);
 
-  const span = <span ref={ref} className={`block truncate ${className}`}>{name}</span>;
+  const span = (
+    <span ref={ref} className={`block truncate ${className}`}>
+      {name}
+    </span>
+  );
 
   if (!isTruncated) return span;
 
@@ -163,7 +167,7 @@ export default function Orders({ orderList }) {
 
   const selectedId = searchParams.get("id");
   const selected = useMemo(
-    () => (selectedId ? orderList.find((o) => o.id === selectedId) ?? null : null),
+    () => (selectedId ? (orderList.find((o) => o.id === selectedId) ?? null) : null),
     [selectedId, orderList],
   );
   const setSelected = useCallback(

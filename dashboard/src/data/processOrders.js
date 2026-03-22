@@ -61,13 +61,15 @@ export function processOrders(details) {
     (sum, d) => sum + toEur(d.overall_saved_eur, d.overall_saved),
     0,
   );
-  const totalTips = details.reduce(
-    (sum, d) => sum + toEur(d.overall_tip_eur, d.overall_tip),
-    0,
-  );
-  const tippedPct = totalOrders > 0
-    ? +((details.filter((d) => toEur(d.overall_tip_eur, d.overall_tip) > 0).length / totalOrders) * 100).toFixed(0)
-    : 0;
+  const totalTips = details.reduce((sum, d) => sum + toEur(d.overall_tip_eur, d.overall_tip), 0);
+  const tippedPct =
+    totalOrders > 0
+      ? +(
+          (details.filter((d) => toEur(d.overall_tip_eur, d.overall_tip) > 0).length /
+            totalOrders) *
+          100
+        ).toFixed(0)
+      : 0;
 
   // --- Monthly spend ---
   const monthMap = {};
@@ -117,7 +119,6 @@ export function processOrders(details) {
   // --- Spend by category ---
   const catMap = {};
   allItems.forEach((item) => {
-
     catMap[item.category] = (catMap[item.category] || 0) + toEur(item.price_eur, item.price);
   });
   const categorySpend = Object.entries(catMap)
@@ -127,11 +128,17 @@ export function processOrders(details) {
   // --- Top products by total spend ---
   const productMap = {};
   allItems.forEach((item) => {
-
     const name = item.product_saved?.name_bg || item.product_saved?.name_en;
     if (!name) return;
     if (!productMap[name]) {
-      productMap[name] = { id: item.product_saved?.id, name, spend: 0, count: 0, unitPriceSum: 0, category: item.category };
+      productMap[name] = {
+        id: item.product_saved?.id,
+        name,
+        spend: 0,
+        count: 0,
+        unitPriceSum: 0,
+        category: item.category,
+      };
     }
     const ps = item.product_saved;
     productMap[name].spend += toEur(item.price_eur, item.price);
@@ -152,7 +159,6 @@ export function processOrders(details) {
   // --- Per-product price history ---
   const productHistoryMap = {};
   allItems.forEach((item) => {
-
     const ps = item.product_saved;
     if (!ps) return;
     const id = ps.id;
@@ -211,28 +217,30 @@ export function processOrders(details) {
       ];
       const items = sources.flatMap((g) =>
         (g.group_items ?? []).map((item) => {
-            const qty = parseFloat(item.quantity) || 1;
-            const total = +toEur(item.price_eur, item.price).toFixed(2);
-            return {
-              name: item.product_saved?.name_bg || item.product_saved?.name_en || "—",
-              productId: item.product_saved?.id ?? null,
-              category: (g.group_name && g.group_name !== "Променени количества")
+          const qty = parseFloat(item.quantity) || 1;
+          const total = +toEur(item.price_eur, item.price).toFixed(2);
+          return {
+            name: item.product_saved?.name_bg || item.product_saved?.name_en || "—",
+            productId: item.product_saved?.id ?? null,
+            category:
+              g.group_name && g.group_name !== "Променени количества"
                 ? g.group_name
                 : (productCategoryMap[item.product_saved?.id] ?? "Друго"),
-              qty,
-              unitPrice: +(total / qty).toFixed(2),
-              total,
-              wasPromo:
-                item.product_saved?.price_promo !== null &&
-                parseFloat(item.product_saved?.price_promo) > 0,
-            };
-          }),
+            qty,
+            unitPrice: +(total / qty).toFixed(2),
+            total,
+            wasPromo:
+              item.product_saved?.price_promo !== null &&
+              parseFloat(item.product_saved?.price_promo) > 0,
+          };
+        }),
       );
       const s = d.order.time_slot_start;
       const e = d.order.time_slot_end;
-      const timeSlot = s != null && e != null
-        ? `${String(s).slice(0, -2).padStart(2, "0")}:${String(s).slice(-2)}–${String(e).slice(0, -2).padStart(2, "0")}:${String(e).slice(-2)}`
-        : null;
+      const timeSlot =
+        s != null && e != null
+          ? `${String(s).slice(0, -2).padStart(2, "0")}:${String(s).slice(-2)}–${String(e).slice(0, -2).padStart(2, "0")}:${String(e).slice(-2)}`
+          : null;
       return {
         id: d.encrypted_id,
         date: d.order.shipping_date,
@@ -252,7 +260,6 @@ export function processOrders(details) {
   // --- Promo dependency per category ---
   const promoCatMap = {};
   allItems.forEach((item) => {
-
     const cat = item.category;
     if (!promoCatMap[cat]) promoCatMap[cat] = { totalSpend: 0, promoSpend: 0 };
     const spend = toEur(item.price_eur, item.price);
@@ -277,7 +284,6 @@ export function processOrders(details) {
   // --- Top brands by spend ---
   const brandMap = {};
   allItems.forEach((item) => {
-
     const brand = item.product_saved?.brand;
     if (!brand) return;
     const trimmed = brand.trim();
@@ -294,14 +300,23 @@ export function processOrders(details) {
 
   // --- Loyalty score per product ---
   // loyalty = months purchased / total active months
-  const allMonths = [...new Set(details.map((d) => d.order?.shipping_date?.slice(0, 7)).filter(Boolean))];
+  const allMonths = [
+    ...new Set(details.map((d) => d.order?.shipping_date?.slice(0, 7)).filter(Boolean)),
+  ];
   const totalMonths = allMonths.length;
   const loyaltyProducts = productList
     .filter((p) => p.count >= 3)
     .map((p) => {
       const purchaseMonths = new Set(p.priceHistory.map((e) => e.date.slice(0, 7)));
-      const loyalty = totalMonths > 0 ? +(purchaseMonths.size / totalMonths * 100).toFixed(0) : 0;
-      return { id: p.id, name: p.name, brand: p.brand, category: p.category, count: p.count, loyalty };
+      const loyalty = totalMonths > 0 ? +((purchaseMonths.size / totalMonths) * 100).toFixed(0) : 0;
+      return {
+        id: p.id,
+        name: p.name,
+        brand: p.brand,
+        category: p.category,
+        count: p.count,
+        loyalty,
+      };
     })
     .sort((a, b) => b.loyalty - a.loyalty)
     .slice(0, 15);

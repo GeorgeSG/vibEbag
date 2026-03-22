@@ -350,7 +350,13 @@ export default function Overview({ data }) {
             <ChartContainer config={timeSlotConfig} className="h-52 w-full">
               <BarChart data={ordersByTimeSlot} margin={{ left: 0, right: 8 }}>
                 <CartesianGrid vertical={false} />
-                <XAxis dataKey="slot" tickLine={false} axisLine={false} tickMargin={8} tick={{ fontSize: 10 }} />
+                <XAxis
+                  dataKey="slot"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  tick={{ fontSize: 10 }}
+                />
                 <YAxis tickLine={false} axisLine={false} tickMargin={8} width={32} />
                 <ChartTooltip
                   content={<ChartTooltipContent formatter={(v) => [`${v} поръчки`]} />}
@@ -391,7 +397,9 @@ export default function Overview({ data }) {
                   <TableCell className="text-muted-foreground">{fmtDate(o.date)}</TableCell>
                   <TableCell className="tabular-nums">{o.itemCount}</TableCell>
                   <TableCell className="text-muted-foreground">{o.timeSlot ?? "—"}</TableCell>
-                  <TableCell className="text-right tabular-nums font-medium">{fmt(o.total)} €</TableCell>
+                  <TableCell className="text-right tabular-nums font-medium">
+                    {fmt(o.total)} €
+                  </TableCell>
                   <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                     <EBagLink type="order" id={o.id} />
                   </TableCell>
@@ -431,9 +439,13 @@ export default function Overview({ data }) {
                     )}
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-2">
-                        <span className="text-sm font-medium leading-snug">{truncate(p.name, 35)}</span>
+                        <span className="text-sm font-medium leading-snug">
+                          {truncate(p.name, 35)}
+                        </span>
                         <div className="flex items-center gap-2 shrink-0">
-                          <span className="text-sm font-semibold text-red-500">+{p.pctIncrease}%</span>
+                          <span className="text-sm font-semibold text-red-500">
+                            +{p.pctIncrease}%
+                          </span>
                           <span onClick={(e) => e.stopPropagation()}>
                             <EBagLink type="product" id={p.id} />
                           </span>
@@ -611,7 +623,10 @@ export default function Overview({ data }) {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-sm font-medium truncate">{p.name}</span>
-                      <span className="text-sm font-semibold shrink-0" style={{ color: "var(--brand)" }}>
+                      <span
+                        className="text-sm font-semibold shrink-0"
+                        style={{ color: "var(--brand)" }}
+                      >
                         {p.loyalty}%
                       </span>
                     </div>
@@ -632,7 +647,6 @@ export default function Overview({ data }) {
           )}
         </CardContent>
       </Card>
-
     </main>
   );
 }
