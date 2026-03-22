@@ -58,7 +58,7 @@ export function LogViewer({ state, logs, onClose, variant = "floating", labels, 
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 w-96 rounded-lg border bg-background shadow-xl overflow-hidden">
+    <div className="fixed bottom-4 right-4 z-50 w-[30rem] rounded-lg border bg-background shadow-xl overflow-hidden">
       <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/50">
         <div className="flex items-center gap-2 text-sm font-medium">
           <StatusIcon state={state} />
@@ -73,7 +73,7 @@ export function LogViewer({ state, logs, onClose, variant = "floating", labels, 
           </button>
         )}
       </div>
-      <div className="h-48 overflow-y-auto p-3 font-mono text-xs text-muted-foreground bg-muted/20">
+      <div className="h-64 overflow-y-auto p-3 font-mono text-xs text-muted-foreground bg-muted/20">
         {lines.map((line, i) => (
           <div key={i} className="whitespace-pre leading-relaxed">
             {line}
